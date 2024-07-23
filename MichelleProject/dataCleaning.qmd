@@ -1,0 +1,32 @@
+```{r}
+# Load libraries
+library(ggplot2)
+library(readr)
+library(data.table)
+library(dplyr)
+library(janitor)
+
+cfs <- read.csv("data/Food_Inspections.csv")
+print(head(cfs, 5))
+```
+
+```{r}
+print(str(cfs))
+print(dim(cfs)) # 275806 rows x 17 cols
+```
+
+```{r}
+print(unique(cfs$Results))
+
+print("Unique names = ")
+unique_names <- length(unique(cfs$DBA.Name))
+unique_names
+
+data_filtered <- cfs %>%
+  filter(Results == "Fail")
+View(data_filtered)
+
+duplicates <- cfs %>%
+  get_dupes(DBA.Name, Address)
+duplicates
+```
