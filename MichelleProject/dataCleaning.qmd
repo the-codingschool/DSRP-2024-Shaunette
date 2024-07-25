@@ -6,27 +6,219 @@ library(data.table)
 library(dplyr)
 library(janitor)
 
-cfs <- read.csv("data/Food_Inspections.csv")
+cfs <- read.csv("/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/data/Food_Inspections.csv")
 print(head(cfs, 5))
 ```
 
 ```{r}
 print(str(cfs))
 print(dim(cfs)) # 275806 rows x 17 cols
+
 ```
 
 ```{r}
-print(unique(cfs$Results))
+# cleaning column names
+cfs_clean <- cfs |>
+  clean_names()
 
-print("Unique names = ")
-unique_names <- length(unique(cfs$DBA.Name))
-unique_names
+# formatting inspection date column from character to Date
+print(class(cfs$Inspection.Date))
+cfs_clean$inspection_date <- as.Date(cfs_clean$inspection_date, format = "%m/%d/%Y")
+print(class(cfs_clean$inspection_date))
 
-data_filtered <- cfs %>%
-  filter(Results == "Fail")
-View(data_filtered)
+# filling blank violation values with NA
+cfs_clean$violations <- na_if(cfs_clean$violations, "")
 
-duplicates <- cfs %>%
-  get_dupes(DBA.Name, Address)
-duplicates
+print(head(cfs))
+print(head(cfs_clean))
+
+# checking for duplicate inspection ids
+duplicates_id <- cfs_clean |>
+  get_dupes(inspection_id)
+
+View(cfs_clean)
+```
+
+```{r}
+ggplot(cfs_clean, aes(x = longitude, y = latitude, color = results)) +
+  geom_point(alpha = 0.5, size = 0.5) +
+  labs(title = "Geographic Distribution of Inspections",
+       x = "Longitude",
+       y = "Latitude")
+```
+
+```{r}
+ggplot(cfs_clean, aes(x = longitude, y = latitude)) +
+  geom_bin2d(bins = 30, alpha = 0.8) +  
+  scale_fill_viridis_c() +
+  labs(title = "Geographic Distribution of Inspections",
+       x = "Longitude",
+       y = "Latitude",
+       fill = "Density") +
+  theme_minimal()
+
+cfs_clean_failed <- cfs_clean %>%
+  filter(results == "Fail" | results == "No Entry" | results == "Out of Business")
+
+ggplot(cfs_clean_failed, aes(x = longitude, y = latitude)) +
+  geom_bin2d(bins = 30, alpha = 0.8) +  
+  scale_fill_viridis_c() +
+  labs(title = "Geographic Distribution of Failed Inspections",
+       x = "Longitude",
+       y = "Latitude",
+       fill = "Density") +
+  theme_minimal()
+```
+
+``` R
+```
+
+```{r}
+# creating new numeric risk column from charcter risk column
+cfs_clean <- cfs_clean %>%
+  mutate(risk_numeric = case_when(
+    risk == "Risk 1 (High)" ~ 1,
+    risk == "Risk 2 (Medium)" ~ 2,
+    risk == "Risk 3 (Low)" ~ 3,
+    risk == "All" ~ 4,
+    TRUE ~ NA_real_
+  ))
+
+summary(cfs_clean$risk_numeric)
+summary(cfs_clean$results)
+
+print(head(cfs))
+
+# remove 81 na values from risk_numeric column
+cfs_clean_filtered <- cfs_clean %>%
+  filter(!is.na(risk_numeric))
+         
+# Plot the inspection results by risk and status
+ggplot(cfs_clean_filtered, aes(x = factor(risk_numeric), fill = results)) +
+  geom_bar(position = "dodge", width = 0.8) +
+  labs(title = "Inspection Results by Risk Level",
+       x = "Risk Level (1-High, 2-Medium, 3-Low, 4-All)",
+       y = "Count",
+       fill = "Inspection Result") +
+  scale_fill_manual(values = c(
+    "Pass" = "blue",
+    "Out of Business" = "red",
+    "No Entry" = "grey",
+    "Fail" = "orange",
+    "Pass w/ Conditions" = "lightblue",
+    "Not Ready" = "purple",
+    "Business Not Located" = "green"
+  )) +
+  theme_minimal()
+```
+
+```{r}
+unique_names <- length(unique(cfs_clean$dba_name))
+cat("Number of unique names:", unique_names)
+
+unique(cfs_clean$risk)
+unique(cfs_clean$results)
+unique(cfs_clean$facility_type)
+```
+
+```{r}
+# Create a frequency table of DBA.Name
+inspection_table <- table(cfs_clean$dba_name)
+
+# Sort in descending order
+sorted_inspection_table <- sort(inspection_table, decreasing = TRUE)
+head(sorted_inspection_table)
+
+# Get  name w/ max number of inspections and its count
+max_inspections_name <- names(sorted_inspection_table)[1]
+max_inspections_count <- sorted_inspection_table[1]
+
+cat("DBA.Name with the maximum number of inspections:", max_inspections_name, "\n")
+cat("Number of inspections:", max_inspections_count, "\n")
+```
+
+```{r}
+# Filter the dataset for the period from June 2023 to June 2024
+limited_data <- cfs_clean %>%
+  filter(inspection_date >= as.Date("2023-06-01") & inspection_date <= as.Date("2024-06-30"))
+
+# data by month
+monthly_inspections <- limited_data %>%
+  mutate(year_month = format(inspection_date, "%Y-%m")) %>%
+  group_by(year_month) %>%
+  summarise(inspection_count = n()) %>%
+  mutate(date = as.Date(paste(year_month, "01", sep = "-"), format = "%Y-%m-%d"))
+
+
+# Create the time series plot
+ggplot(monthly_inspections, aes(x = date, y = inspection_count)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Monthly Number of Inspections (June 2023 - June 2024)",
+       x = "Month",
+       y = "Number of Inspections") +
+  theme_minimal() 
+```
+
+```{r}
+failed_data <- limited_data %>%
+  filter(results == "Fail")  
+
+# Aggregate failed inspections data by month
+monthly_failed_inspections <- failed_data %>%
+  mutate(year_month = format(inspection_date, "%Y-%m")) %>%
+  group_by(year_month) %>%
+  summarise(failed_inspection_count = n()) %>%
+  mutate(date = as.Date(paste(year_month, "01", sep = "-"), format = "%Y-%m-%d"))
+
+# Create the time series plot for failed inspections
+ggplot(monthly_failed_inspections, aes(x = date, y = failed_inspection_count)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Monthly Number of Failed Inspections (June 2023 - June 2024)",
+       x = "Month",
+       y = "Number of Failed Inspections") +
+  theme_minimal()
+```
+
+```{r}
+passed_data <- limited_data %>%
+  filter(results == "Pass")  # Adjust 'Pass' if your dataset uses a different value
+
+# Aggregate passed inspections data by month
+monthly_passed_inspections <- passed_data %>%
+  mutate(year_month = format(inspection_date, "%Y-%m")) %>%
+  group_by(year_month) %>%
+  summarise(passed_inspection_count = n()) %>%
+  mutate(date = as.Date(paste(year_month, "01", sep = "-"), format = "%Y-%m-%d"))
+
+# Create the time series plot for passed inspections
+ggplot(monthly_passed_inspections, aes(x = date, y = passed_inspection_count)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Monthly Number of Passed Inspections (June 2023 - June 2024)",
+       x = "Month",
+       y = "Number of Passed Inspections") +
+  theme_minimal()
+```
+
+```{r}
+oob_data <- limited_data %>%
+  filter(results == "Out of Business")  
+
+# Aggregate out of business inspections data by month
+monthly_oob_inspections <- oob_data %>%
+  mutate(year_month = format(inspection_date, "%Y-%m")) %>%
+  group_by(year_month) %>%
+  summarise(oob_inspection_count = n()) %>%
+  mutate(date = as.Date(paste(year_month, "01", sep = "-"), format = "%Y-%m-%d"))
+
+# Create the time series plot for passed inspections
+ggplot(monthly_oob_inspections, aes(x = date, y = oob_inspection_count)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Monthly Number of Out of Business Inspections (June 2023 - June 2024)",
+       x = "Month",
+       y = "Number of Out of Business Inspections") +
+  theme_minimal()
 ```
