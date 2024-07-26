@@ -40,11 +40,17 @@ View(cfs_clean)
 ```
 
 ```{r}
-ggplot(cfs_clean, aes(x = longitude, y = latitude, color = results)) +
+filtered_results_data <- cfs_clean %>%
+  filter(results %in% c("Pass"))
+
+ggplot(filtered_results_data, aes(x = longitude, y = latitude, color = results)) +
   geom_point(alpha = 0.5, size = 0.5) +
+  scale_color_manual(values = c("Pass" = "black")) +
   labs(title = "Geographic Distribution of Inspections",
        x = "Longitude",
-       y = "Latitude")
+       y = "Latitude",
+       color = "Inspection Result") +
+  theme_minimal()
 ```
 
 ```{r}
@@ -70,7 +76,7 @@ ggplot(cfs_clean_failed, aes(x = longitude, y = latitude)) +
   theme_minimal()
 ```
 
-``` R
+``` r
 ```
 
 ```{r}
@@ -140,7 +146,7 @@ cat("Number of inspections:", max_inspections_count, "\n")
 ```{r}
 # Filter the dataset for the period from June 2023 to June 2024
 limited_data <- cfs_clean %>%
-  filter(inspection_date >= as.Date("2023-06-01") & inspection_date <= as.Date("2024-06-30"))
+  filter(inspection_date >= as.Date("2023-07-01") & inspection_date <= as.Date("2024-06-30"))
 
 # data by month
 monthly_inspections <- limited_data %>%
@@ -154,7 +160,8 @@ monthly_inspections <- limited_data %>%
 ggplot(monthly_inspections, aes(x = date, y = inspection_count)) +
   geom_line() +
   geom_point() +
-  labs(title = "Monthly Number of Inspections (June 2023 - June 2024)",
+  scale_y_continuous(limits = c(0, NA)) +
+  labs(title = "Monthly Number of Inspections (July 2023 - June 2024)",
        x = "Month",
        y = "Number of Inspections") +
   theme_minimal() 
@@ -175,6 +182,7 @@ monthly_failed_inspections <- failed_data %>%
 ggplot(monthly_failed_inspections, aes(x = date, y = failed_inspection_count)) +
   geom_line() +
   geom_point() +
+  scale_y_continuous(limits = c(0, NA)) +
   labs(title = "Monthly Number of Failed Inspections (June 2023 - June 2024)",
        x = "Month",
        y = "Number of Failed Inspections") +
@@ -196,6 +204,7 @@ monthly_passed_inspections <- passed_data %>%
 ggplot(monthly_passed_inspections, aes(x = date, y = passed_inspection_count)) +
   geom_line() +
   geom_point() +
+  scale_y_continuous(limits = c(0, NA)) +
   labs(title = "Monthly Number of Passed Inspections (June 2023 - June 2024)",
        x = "Month",
        y = "Number of Passed Inspections") +
@@ -203,22 +212,75 @@ ggplot(monthly_passed_inspections, aes(x = date, y = passed_inspection_count)) +
 ```
 
 ```{r}
-oob_data <- limited_data %>%
-  filter(results == "Out of Business")  
+limited_data <- cfs_clean %>%
+  filter(inspection_date >= as.Date("2023-07-01") & inspection_date <= as.Date("2024-06-30"))
 
-# Aggregate out of business inspections data by month
-monthly_oob_inspections <- oob_data %>%
+# Filter the dataset for the period from June 2023 to June 2024
+oob_data <- limited_data %>%
+  filter(results == "Out of Business")
+
+# data by month
+oob_inspections <- oob_data %>%
   mutate(year_month = format(inspection_date, "%Y-%m")) %>%
   group_by(year_month) %>%
   summarise(oob_inspection_count = n()) %>%
   mutate(date = as.Date(paste(year_month, "01", sep = "-"), format = "%Y-%m-%d"))
 
-# Create the time series plot for passed inspections
-ggplot(monthly_oob_inspections, aes(x = date, y = oob_inspection_count)) +
+# Create the time series plot
+ggplot(oob_inspections, aes(x = date, y = oob_inspection_count)) +
   geom_line() +
   geom_point() +
-  labs(title = "Monthly Number of Out of Business Inspections (June 2023 - June 2024)",
+  scale_y_continuous(limits = c(0, NA)) +
+  labs(title = "Monthly Number of Out of Business Inspections (July 2023 - June 2024)",
        x = "Month",
-       y = "Number of Out of Business Inspections") +
+       y = "Number of Inspections") +
   theme_minimal()
+```
+
+```{r}
+past_few_years <- cfs_clean %>%
+  filter(format(inspection_date, "%Y") %in% 2015:2023) %>%
+  mutate(year = format(inspection_date, "%Y"))
+
+inspection_count <- past_few_years %>%
+  group_by(year, results) %>%
+  summarise(count = n(), .groups = "drop")
+
+ggplot(inspection_count, aes(x = results, y = count, fill = results)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~ year) +
+  labs(title = "Distribution of Inspection Results from 2015 to 2023",
+       x = "Inspection Results",
+       y = "Number of Inspections") +
+  theme_minimal() +
+  theme(axis.text.x = element_blank())
+
+inspection_count
+```
+
+```{r}
+yearly_data <- cfs_clean %>%
+  filter(inspection_date >= as.Date("2013-01-01") & inspection_date <= as.Date("2023-12-31"))
+
+# Aggregate the data by year
+annual_inspections <- yearly_data %>%
+  mutate(year = format(inspection_date, "%Y")) %>%
+  group_by(year) %>%
+  summarise(total_inspections = n()) %>%
+  mutate(year = as.integer(year))  # Ensure year is treated as numeric
+
+# Create the line chart
+ggplot(annual_inspections, aes(x = year, y = total_inspections)) +
+  geom_line() +
+  geom_point() +
+  scale_x_continuous(breaks = seq(2013, 2023, 1)) +  # Set x-axis breaks for each year
+  labs(title = "Total Number of Inspections (2013 - 2023)",
+       x = "Year",
+       y = "Total Number of Inspections") +
+  scale_y_continuous(limits = c(0, NA)) +
+  theme_minimal()
+```
+
+```{r}
+head(cfs$Violations)
 ```
