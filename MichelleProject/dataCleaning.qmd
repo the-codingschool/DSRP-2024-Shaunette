@@ -35,7 +35,7 @@ print(head(cfs_clean))
 duplicates_id <- cfs_clean |>
   get_dupes(inspection_id)
 
-View(cfs_clean)
+#View(cfs_clean)
 ```
 
 ```{r}
@@ -110,7 +110,7 @@ Grouping Places by Municipalities
 
 ```{r}
 if (!"tidygeocoder" %in% installed.packages()) {
-  install.packages("tidygeocoder")
+install.packages("tidygeocoder")
 }
 
 library(dplyr, warn.conflicts = FALSE)
@@ -118,8 +118,71 @@ library(tidygeocoder)
 
 coords = cfs_clean[c("latitude","longitude")]
 
-exact_locs <- coords %>%reverse_geocode(lat = latitude, long = longitude, method = 'osm',address = address_found, full_results = TRUE)
+exact_locs <- coords %>%
+  reverse_geocode(lat = latitude, long = longitude, method = 'osm',address = address_found, full_results = TRUE)
 
+saveRDS(exact_locs, file = "/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/MichelleProject/exact_locs.rds")
+```
+
+```{r}
+
+```
+
+```{r}
+if (!"tidygeocoder" %in% installed.packages()) {
+  install.packages("tidygeocoder")
+}
+
+library(dplyr, warn.conflicts = FALSE)
+library(tidygeocoder)
+
+coords <- cfs_clean[c("latitude", "longitude")]
+
+# Total number of coordinates
+total_coords <- nrow(coords)
+
+# Function to print progress
+print_progress <- function(current, total) {
+  percent_complete <- round((current / total) * 100, 1)
+  coords_left <- total - current
+  cat(sprintf("\rProcessing: %.1f%% complete | Coordinates left: %d", percent_complete, coords_left))
+}
+
+# Initialize an empty data frame with the expected columns
+exact_locs <- data.frame(
+  latitude = numeric(),
+  longitude = numeric(),
+  address_found = character(),
+  stringsAsFactors = FALSE
+)
+
+# Process each coordinate with a loop and print progress
+for (i in 1:total_coords) {
+  single_coord <- coords[i, , drop = FALSE] # Create a single-row data frame
+  
+  start_time <- Sys.time()
+  loc <- reverse_geocode(.tbl = single_coord, lat = latitude, long = longitude, method = 'osm', full_results = TRUE)
+  end_time <- Sys.time()
+  
+  time_taken <- as.numeric(difftime(end_time, start_time, units = "secs"))
+  
+  # Ensure loc has the same structure as exact_locs before binding
+  if (all(names(loc) %in% names(exact_locs))) {
+    exact_locs <- rbind(exact_locs, loc)
+  }
+  
+  # Print progress
+  print_progress(i, total_coords)
+}
+
+# Move to the next line after completion
+cat("\nProcessing complete.\n")
+
+saveRDS(exact_locs, file = "/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/MichelleProject/exact_locs.rds")
+
+```
+
+```{r}
 #to see column names available
 colnames(exact_locs)
 
@@ -127,6 +190,8 @@ colnames(exact_locs)
 filtered_locs <- exact_locs %>%
   select(latitude, longitude, quarter, municipality, city, postcode)
 
-saveRDS(exact_locs, file = "/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/MichelleProject/exact_locs.rds")
 saveRDS(filtered_locs, file = "/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/MichelleProject/filtered_locs.rds")
+```
+
+```         
 ```

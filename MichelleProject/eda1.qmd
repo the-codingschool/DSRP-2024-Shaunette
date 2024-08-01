@@ -37,6 +37,14 @@ ggplot(cfs_clean, aes(x = longitude, y = latitude)) +
        x = "Longitude",
        y = "Latitude",
        fill = "Density") +
+  # changing axes to count by 0.05
+  scale_x_continuous(breaks = seq(-87.9, -87.5, by = 0.05), 
+                     labels = function(x) sprintf("%.2f", x)) +
+  scale_y_continuous(breaks = seq(41.7, 42.0, by = 0.05), 
+                     labels = function(y) sprintf("%.2f", y)) +
+  # checking if estimated coordinate intervals cover highest density area
+  geom_rect(aes(xmin = -87.635, xmax = -87.615, ymin = 41.8975, ymax = 41.8775), 
+            color = "red", fill = NA, size = 1) +
   theme_minimal()
 
 # filter failed results
@@ -45,37 +53,9 @@ cfs_clean_failed <- cfs_clean %>%
 
 # plot for failed inspections
 ggplot(cfs_clean_failed, aes(x = longitude, y = latitude)) +
-  geom_bin2d(bins = 30, alpha = 0.8) +  
+  geom_bin2d(bins = 30, alpha = 0.8) +
   scale_fill_gradient(low = "yellow", high = "blue") +
   labs(title = "Geographic Distribution of Failed Inspections",
-       x = "Longitude",
-       y = "Latitude",
-       fill = "Density") +
-  theme_minimal()
-
-# filter out of business results
-cfs_clean_oob <- cfs_clean %>%
-  filter(results == "Out of Business")
-
-# plot for out of business inspections
-ggplot(cfs_clean_oob, aes(x = longitude, y = latitude)) +
-  geom_bin2d(bins = 30, alpha = 0.8) +  
-  scale_fill_gradient(low = "yellow", high = "blue") +
-  labs(title = "Geographic Distribution of Out of Business Inspections",
-       x = "Longitude",
-       y = "Latitude",
-       fill = "Density") +
-  theme_minimal()
-
-# filter passed results
-cfs_clean_pass <- cfs_clean %>%
-  filter(results == "Pass")
-
-# plot for passing inspections
-ggplot(cfs_clean_pass, aes(x = longitude, y = latitude)) +
-  geom_bin2d(bins = 30, alpha = 0.8) +  
-  scale_fill_gradient(low = "yellow", high = "blue") +
-  labs(title = "Geographic Distribution of Passed Inspections",
        x = "Longitude",
        y = "Latitude",
        fill = "Density") +

@@ -1,0 +1,25 @@
+```{r}
+# Load libraries
+library(ggplot2)
+library(readr)
+library(data.table)
+library(dplyr)
+library(janitor)
+
+readRDS("/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/MichelleProject/cfs_clean.rds")
+readRDS("/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/MichelleProject/exact_locs.rds")
+```
+
+Testing Getting Municipality from Small Dataset's Longitude and Latitude
+```{r}
+# Looking at resulting dataset --> quarter column aligns with unemployment data
+dataHead <- head(coords, 5) %>%reverse_geocode(lat = latitude, long = longitude, method = 'osm',address = address_found, full_results = TRUE)
+dataHead
+colnames(dataHead)
+unique(dataHead$municipality)
+unique(dataHead$quarter)
+```
+
+```{r}
+
+```
