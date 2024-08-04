@@ -9,6 +9,7 @@ library(janitor)
 readRDS("/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/MichelleProject/cfs_clean.rds")
 readRDS("/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/MichelleProject/exact_locs.rds")
 unemployment <- readRDS("/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/MichelleProject/unemployment_clean.rds")
+head(unemployment)
 ```
 
 Testing Getting Municipality from Small Dataset's Longitude and Latitude
@@ -58,6 +59,19 @@ ggplot(merged_dense_data, aes(x = percent_aged_16_unemployed, y = inspection_cou
        y = "Inspection Count") +
   theme_minimal()
 
+ggplot(merged_dense_data, aes(x = percent_aged_25_without_high_school_diploma, y = inspection_count)) +
+  geom_point(alpha = 0.5, size = 0.5) +
+  labs(title = "Percent without Diploma  and Inspection Count in Dense Area",
+       x = "(%) aged 25 without HS diploma",
+       y = "Inspection Count") +
+  theme_minimal()
+
+ggplot(merged_dense_data, aes(x = hardship_index, y = inspection_count)) +
+  geom_point(alpha = 0.5, size = 0.5) +
+  labs(title = "hardship_index and Inspection Count in Dense Area",
+       x = "Hardship Index",
+       y = "Inspection Count") +
+  theme_minimal()
 ```
 
 Pandemic Investigation
@@ -84,7 +98,17 @@ avg_risk <- cfs_clean |>
   select(latitude, longitude, risk_numeric) |>
   group_by(latitude, longitude) |>
   summarise(avg_risk = mean(risk_numeric, na.rm = TRUE), .groups = 'drop')
-  
+
+complaints_per_location <- cfs_clean %>%
+  filter(inspection_type == "Complaint" | inspection_type == "Complaint Re-Inspection") %>%
+  group_by(latitude, longitude) %>%
+  summarise(complaint_count = n(), .groups = 'drop')
+
+pass_per_location <- cfs_clean%>%
+  filter(results == "Pass" | results =="Pass w/ Conditions") %>%
+  group_by(latitude, longitude) %>%
+  summarise(pass_count = n(), .groups = 'drop')
+
 locs <- exact_locs |>
   select(longitude, latitude, address_found, place_id, quarter)
 
@@ -96,6 +120,8 @@ aggregated_data <- locs %>%
    unique() %>%
    left_join(aggregated_data, by = c("latitude", "longitude")) %>%
    left_join(avg_risk, by = c("latitude", "longitude")) %>%
+   left_join(complaints_per_location, by = c("latitude", "longitude")) %>%
+   left_join(pass_per_location, by = c("latitude", "longitude")) %>%
    full_join(unemployment, by = c("quarter" = "community_area_name"), relationship = "many-to-many")
  
  print(head(merged_data))
@@ -112,129 +138,37 @@ Graphing Relationship between Unemployment and Inspection Counts
 merged_data_2 <- merged_data |>
   filter(inspection_count <3000)
 
-ggplot(merged_data_2, aes(x = hardship_index, y = inspection_count)) +
+ggplot(merged_data_2, aes(x = hardship_index, y = pass_count)) +
   geom_point(alpha = 0.5, size = 0.5) +
-  labs(title = "Relationship between hardship_index and Inspection Counts",
-       x = "Rate (%)",
+  labs(title = "Hardship Index vs Inspection Counts",
+       x = "Hardship Index",
        y = "Inspection Count") +
   theme_minimal()
 
 ggplot(merged_data_2, aes(x = percent_aged_16_unemployed, y = inspection_count)) +
   geom_point(alpha = 0.5, size = 0.5) +
-  labs(title = "percent_aged_16_unemployed vs Inspection Counts",
-       x = " Rate (%)",
-       y = "Inspection Count") +
-  theme_minimal()
-
-ggplot(merged_data_2, aes(x = percent_households_below_poverty, y = inspection_count)) +
-  geom_point(alpha = 0.5, size = 0.5) +
-  labs(title = "percent_households_below_poverty vs Inspection Counts",
-       x = " Rate (%)",
-       y = "Inspection Count") +
-  theme_minimal()
-
-ggplot(merged_data_2, aes(x = per_capita_income, y = inspection_count)) +
-  geom_point(alpha = 0.5, size = 0.5) +
-  labs(title = "per_capita_income vs Inspection Counts",
-       x = " Rate (%)",
-       y = "Inspection Count") +
-  theme_minimal()
-
-ggplot(merged_data_2, aes(x = percent_of_housing_crowded, y = inspection_count)) +
-  geom_point(alpha = 0.5, size = 0.5) +
-  labs(title = "percent_of_housing_crowded vs Inspection Counts",
-       x = " Rate (%)",
+  labs(title = "Unemployment Rate vs Inspection Counts",
+       x = "Unemployment Rate (%)",
        y = "Inspection Count") +
   theme_minimal()
 
 ggplot(merged_data_2, aes(x = percent_aged_25_without_high_school_diploma, y = inspection_count)) +
   geom_point(alpha = 0.5, size = 0.5) +
-  labs(title = "percent_aged_25_without_high_school_diploma vs Inspection Counts",
-       x = " Rate (%)",
+  labs(title = "Education Rate vs Inspection Counts",
+       x = "Percent Aged 25 without High School Diploma",
        y = "Inspection Count") +
   theme_minimal()
-
-ggplot(merged_data_2, aes(x = percent_aged_under_18_or_over_64, y = inspection_count)) +
-  geom_point(alpha = 0.5, size = 0.5) +
-  labs(title = "percent_aged_under_18_or_over_64 vs Inspection Counts",
-       x = " Rate (%)",
-       y = "Inspection Count") +
-  theme_minimal()
-
-colnames(unemployment)
 ```
 
 ```{r}
-correlation <- cor(merged_data$avg_risk, merged_data$inspection_count)
+colnames(merged_data)
+correlation <- cor(merged_data$avg_risk, merged_data$pass_count, use = "complete.obs")
 print(correlation)
 
-ggplot(merged_data, aes(x = avg_risk, y = percent_aged_16_unemployed)) +
+ggplot(merged_data_2, aes(x = complaint_count, y = inspection_count)) +
   geom_point(alpha = 0.5, size = 0.5) +
-  labs(title = "Correlation between Risk and Unemployment Rate",
-       x = "Unemployment Rate (%)",
-       y = "Average Risk") +
+  labs(title = "Correlation between Complaints and Inspection Count",
+       x = "Complaints",
+       y = "Inspection Count") +
   theme_minimal()
-
-colnames(merged_data)
-```
-
-```{r}
-#colnames(merged_data)
-library(readr)
-library(caTools)
-
-set.seed(42)
-split <- sample.split(merged_data$inspection_count, SplitRatio = 0.8)
-train_data <- subset(merged_data, split == TRUE)
-test_data <- subset(merged_data, split == FALSE)
-lr_model <- lm(inspection_count ~ percent_aged_16_unemployment + percent_households_below_poverty, data = train_data)
-pred <- predict(lr_model, newdata = test_data)
-
-ggplot(test_data, aes(x = inspection_count, y = pred)) +
-  geom_point(size = 0.5) +
-  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
-  labs(title = "Real vs Predicted Values",
-       x = "True Inspection Counts",
-       y = "Predicted Inspection Counts")
-
-mse <- mean((test_data$inspection_count - pred)^2)
-r_squared <- summary(lr_model)$r.squared
-
-mse
-r_squared
-```
-
-```{r}
-library(FNN)
-data <- merged_data |>
-  na.omit() |>
-  select(c('percent_of_housing_crowded', 'percent_households_below_poverty',
-            'percent_aged_16_unemployed', 'percent_aged_25_without_high_school_diploma',
-            'per_capita_income', 'hardship_index', 'percent_aged_under_18_or_over_64',
-            'inspection_count'))
-
-# Split the data into training and testing sets
-set.seed(123)  # Set seed for reproducibility
-split <- sample.split(data$inspection_count, SplitRatio = 0.8)
-
-train_data <- subset(data, split == TRUE)
-test_data <- subset(data, split == FALSE)
-
-# Perform KNN
-knn_model <- knn(train = train_data[, c('percent_of_housing_crowded', 'percent_households_below_poverty',
-                                         'percent_aged_16_unemployed', 'percent_aged_25_without_high_school_diploma',
-                                         'per_capita_income', 'hardship_index', 'percent_aged_under_18_or_over_64')],
-                 test = test_data[, c('percent_of_housing_crowded', 'percent_households_below_poverty',
-                                      'percent_aged_16_unemployed', 'percent_aged_25_without_high_school_diploma',
-                                      'per_capita_income', 'hardship_index', 'percent_aged_under_18_or_over_64')],
-                 cl = train_data$inspection_count,
-                 k = 5)
-```
-
-```{r}
-
-```
-
-```{r}
-
 ```
