@@ -8,13 +8,26 @@ library(FNN)
 library(readxl)
 
 data <- readRDS("/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/MichelleProject/merged_data.rds")
-data <- na.omit(data)
+na_count <- sum(is.na(data$complaint_count))
+na_count # 9829 
+
+df_new <- data %>% select(-complaint_count)
+df_new <- na.omit(df_new)
+View(df_new)
+dim(df_new)
+(get_dupes(df_new, c(longitude, latitude)))
+na_count <- sum(is.na(data$quarter))
+na_count # 9829 
+
+View(data)
+dim(data)
+print(sum(data$inspection_count))
 ```
 
 ```{r}
 set.seed(42)
 
-data <- data[, c('percent_aged_16_unemployed', 'hardship_index', 'complaint_count', 'avg_risk', 'inspection_count', 'pass_count')]
+data <- data[, c('percent_aged_16_unemployed', 'hardship_index', 'complaint_count', 'avg_risk', 'inspection_count')]
 split <- sample.split(data$pass_count, SplitRatio = 0.8)
 train_data <- subset(data, split == TRUE)
 test_data <- subset(data, split == FALSE)

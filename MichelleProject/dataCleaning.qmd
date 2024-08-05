@@ -134,6 +134,10 @@ unemployment_clean <- unemployment |>
 View(unemployment_clean)
   
 saveRDS(unemployment_clean, file = "/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/MichelleProject/unemployment_clean.rds")
+
+head(exact_locs)
+head(cfs_clean)
+saveRDS(exact_locs, file = "/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/MichelleProject/exact_locs.rds")
 ```
 
 ```{r}
