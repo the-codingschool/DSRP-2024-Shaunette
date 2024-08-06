@@ -10,6 +10,7 @@ readRDS("/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/MichelleProject/cfs_
 readRDS("/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/MichelleProject/exact_locs.rds")
 unemployment <- readRDS("/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/MichelleProject/unemployment_clean.rds")
 head(unemployment)
+readRDS("/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/MichelleProject/merged_data.rds")
 ```
 
 Testing Getting Municipality from Small Dataset's Longitude and Latitude
@@ -148,6 +149,7 @@ merged_data_clean <- merged_data_clean |>
   
 View(merged_data_clean)
 colnames(merged_data_clean)
+saveRDS(merged_data_clean, "/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/MichelleProject/merged_data_clean.rds")
 
 # convert column values to log to account for differences in magnitude
 merged_data_log <- merged_data |>
@@ -159,7 +161,7 @@ merged_data_log <- merged_data |>
             percent_aged_16_unemployed = percent_aged_16_unemployed,
             hardship_index = hardship_index) 
 head(merged_data_clean_log)
-saveRDS(merged_data_log, "/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/MichelleProject/merged_data_log.rds")
+#saveRDS(merged_data_log, "/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/MichelleProject/merged_data_log.rds")
 
 # dataset grouped by quarter instead of unique longitude and latitude
 merged_data_by_quarter <- merged_data |>

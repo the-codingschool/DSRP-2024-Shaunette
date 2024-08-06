@@ -1,0 +1,78 @@
+```{r}
+library(ggplot2)
+library(caTools)
+library(readr)
+library(downloader)
+library(caTools)
+library(FNN)
+library(readxl)
+
+merged_data_clean <- readRDS("/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/MichelleProject/merged_data_clean.rds")
+merged_data_log <- readRDS("/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/MichelleProject/merged_data_log.rds")
+```
+
+Splitting Data into test and train data
+
+```{r}
+split <- sample.split(merged_data_clean$inspection_count, SplitRatio = 0.8)
+train_data <- subset(merged_data_clean, split == TRUE)
+test_data <- subset(merged_data_clean, split == FALSE)
+
+split_2 <- sample.split(merged_data_log$log_inspection_count, SplitRatio = 0.8)
+train_data_2 <- subset(merged_data_log, split_2 == TRUE)
+test_data_2 <- subset(merged_data_log, split_2 == FALSE)
+```
+
+Creating Linear Models
+
+```{r}
+#Linear Model #1 - uses 2 predicting variables
+lr_model <- lm(inspection_count ~ percent_risk_1 + percent_complaint, data = merged_data_clean)
+
+#Linear Model #2 - uses 4 predicting variables
+extended_model <- lm(inspection_count ~ hardship_index + percent_aged_16_unemployed + percent_risk_1 + percent_complaint, data = merged_data_clean)
+
+# LOG Linear Model #3 - uses 2 predicting variables
+lr_model_2 <- lm(log_inspection_count ~ log_risk_1_count + log_complaint_count, data = merged_data_log)
+
+# LOG Linear Model #4 - uses 4 predicting variables
+extended_model_2 <- lm(log_inspection_count ~ hardship_index + percent_aged_16_unemployed + log_risk_1_count + log_complaint_count, data = merged_data_log)
+```
+
+```{r}
+# clean dataset
+pred <- predict(lr_model, newdata = test_data)
+pred_2 <- predict(extended_model, newdata = test_data)
+
+# log dataset
+pred_3 <- predict(lr_model_2, newdata = test_data_2)
+pred_4 <- predict(extended_model_2, newdata = test_data_2)
+```
+
+```{r}
+# linear model 1
+cat("mse = ", mean((test_data$inspection_count - pred)^2))
+cat("\nr_squared = ", summary(lr_model)$r.squared)
+
+# linear model 2
+cat("\nmse = ", mean((test_data$inspection_count - pred_2)^2))
+cat("\nr_squared = ", summary(extended_model)$r.squared)
+
+# linear model 3
+cat("\nmse = ", mean((test_data_2$log_inspection_count - pred_3)^2))
+cat("\nr_squared = ", summary(lr_model_2)$r.squared)
+
+# linear model 4
+cat("\nmse = ", mean((test_data_2$log_inspection_count - pred_4)^2))
+cat("\nr_squared = ", summary(extended_model_2)$r.squared)
+```
+
+```{r}
+# clean dataset anova test
+anova_result <- anova(lr_model, extended_model)
+print(anova_result)
+
+# log dataset anova test
+anova_result <- anova(lr_model_2, extended_model_2)
+print(anova_result)
+```
