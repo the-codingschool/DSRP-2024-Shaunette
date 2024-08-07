@@ -159,7 +159,14 @@ merged_data_clean <- merged_data |>
             risk_1_count = risk_1_count,
             percent_aged_16_unemployed = percent_aged_16_unemployed,
             hardship_index = hardship_index) |>
-  na.omit()
+  na.omit() |>
+  mutate(
+    log_inspection_count = log(inspection_count),
+    log_complaint_count = log(complaint_count),
+    log_risk_1_count = log(risk_1_count),
+    log_percent_aged_16_unemployed = log(percent_aged_16_unemployed),
+    log_hardship_index = log(hardship_index)
+  )
 saveRDS(merged_data_clean, "/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/MichelleProject/merged_data_clean.rds")
 dim(merged_data_clean) # 5123 rows and 9 columns
 
@@ -212,39 +219,7 @@ ggplot(merged_data_clean, aes(x = hardship_index, y = inspection_count)) +
 ```
 
 ```{r}
-ggplot(merged_data_log, aes(x = log_complaint_count, y = log_inspection_count)) +
-  geom_point(alpha = 0.5, size = 0.5) +
-  labs(title = "complaint vs inspection count",
-       x = "log of complaint count",
-       y = "log of inspection count") +
-  theme_minimal()
 
-ggplot(merged_data_log, aes(x = log_risk_1_count, y = log_inspection_count)) +
-  geom_point(alpha = 0.5, size = 0.5) +
-  labs(title = "risk 1 vs inspection count",
-       x = "log of risk 1 count",
-       y = "log of inspection count") +
-  theme_minimal()
-
-ggplot(merged_data_log, aes(x = percent_aged_16_unemployed, y = log_inspection_count)) +
-  geom_point(alpha = 0.5, size = 0.5) +
-  labs(title = "unemployment % vs inspection count",
-       x = "unemployment %",
-       y = "log of inspection count") +
-  theme_minimal()
-
-ggplot(merged_data_log, aes(x = hardship_index, y = log_inspection_count)) +
-  geom_point(alpha = 0.5, size = 0.5) +
-  labs(title = "hardship index vs inspection count",
-       x = "hardship index",
-       y = "log of inspection count") +
-  theme_minimal()
-
-correlation <- cor(merged_data_log$percent_aged_16_unemployed, merged_data_log$log_inspection_count, use = "complete.obs")
-print(correlation)
-
-correlation2 <- cor(merged_data_log$hardship_index, merged_data_log$log_inspection_count, use = "complete.obs")
-print(correlation2)
 ```
 
 ```{r}

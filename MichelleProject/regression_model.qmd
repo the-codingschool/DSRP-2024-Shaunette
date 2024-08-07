@@ -9,17 +9,97 @@ library(readxl)
 
 merged_data_clean <- readRDS("/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/MichelleProject/merged_data_clean.rds")
 
+linear_relationship <- merged_data_clean %>%
+  select(
+    inspection_count, complaint_count, risk_1_count, percent_aged_16_unemployed, hardship_index
+  )
+
 power_relationship <- merged_data_clean %>%
-  mutate(
-    log_inspection_count = log(inspection_count),
-    log_complaint_count = log(complaint_count),
-    log_risk_1_count = log(risk_1_count),
-    log_percent_aged_16_unemployed = log(percent_aged_16_unemployed),
-    log_hardship_index = log(hardship_index)
-  ) %>%
   select(
     log_inspection_count, log_complaint_count, log_risk_1_count, log_percent_aged_16_unemployed, log_hardship_index
   )
+
+log_relationship <- merged_data_clean %>%
+  select(
+    log_inspection_count, log_complaint_count, log_risk_1_count, percent_aged_16_unemployed, hardship_index
+  )
+```
+
+```{r}
+ggplot(merged_data_clean, aes(x = log_complaint_count, y = log_inspection_count)) +
+  geom_point(alpha = 0.6, size = 0.5, color = "blue") +  
+  geom_smooth(method = "lm", se = FALSE, color = "red", linetype = "dashed") +  
+  labs(title = "Relationship Between Complaint and Inspection Counts",
+       subtitle = "Analysis of log-transformed counts",
+       x = "Log of Complaint Count",
+       y = "Log of Inspection Count",
+       caption = "Source: City of Chicago's Health and Human Services") + 
+  theme_minimal(base_size = 15) + 
+  theme(
+    plot.title = element_text(hjust = 1, face = "bold"),  
+    plot.subtitle = element_text(hjust = 0.5),  
+    plot.caption = element_text(hjust = 1), 
+    axis.title.x = element_text(face = "bold"), 
+    axis.title.y = element_text(face = "bold")
+  )
+
+ggplot(merged_data_clean, aes(x = log_risk_1_count, y = log_inspection_count)) +
+  geom_point(alpha = 0.6, size = 1, color = "blue") +
+  geom_smooth(method = "lm", se = FALSE, color = "red", linetype = "dashed") +
+  labs(title = "Relationship Between Risk 1 and Inspection Counts",
+       subtitle = "Analysis of log-transformed counts",
+       x = "Log of Risk 1 Count",
+       y = "Log of Inspection Count",
+       caption = "Source: City of Chicago's Health and Human Services") +
+  theme_minimal(base_size = 15) +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold"),
+    plot.subtitle = element_text(hjust = 0.5),
+    plot.caption = element_text(hjust = 1),
+    axis.title.x = element_text(face = "bold"),
+    axis.title.y = element_text(face = "bold"),
+  )
+
+ggplot(merged_data_clean, aes(x = log_percent_aged_16_unemployed, y = log_inspection_count)) +
+  geom_point(alpha = 0.6, size = 1, color = "blue") +
+  geom_smooth(method = "lm", se = FALSE, color = "red", linetype = "dashed") +
+  labs(title = "Relationship Between Unemployment % and Inspection Counts",
+       subtitle = "Analysis of log-transformed counts",
+       x = "Log of Unemployment %",
+       y = "Log of Inspection Count",
+       caption = "Source: City of Chicago's Health and Human Services") +
+  theme_minimal(base_size = 15) +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold"),
+    plot.subtitle = element_text(hjust = 0.5),
+    plot.caption = element_text(hjust = 1),
+    axis.title.x = element_text(face = "bold"),
+    axis.title.y = element_text(face = "bold")
+  )
+
+ggplot(merged_data_clean, aes(x = log_hardship_index, y = log_inspection_count)) +
+  geom_point(alpha = 0.6, size = 1, color = "blue") +
+  geom_smooth(method = "lm", se = FALSE, color = "red", linetype = "dashed") +
+  labs(title = "Relationship Between Hardship Index and Inspection Counts",
+       subtitle = "Analysis of log-transformed counts",
+       x = "Log of Hardship Index",
+       y = "Log of Inspection Count",
+       caption = "Source: City of Chicago's Health and Human Services") +
+  theme_minimal(base_size = 15) +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold"),
+    plot.subtitle = element_text(hjust = 0.5),
+    plot.caption = element_text(hjust = 1),
+    axis.title.x = element_text(face = "bold"),
+    axis.title.y = element_text(face = "bold")
+    )
+```
+
+```{r}
+cat("\n\nlog of complaint count vs log of inspection correlation: ", cor(power_relationship$log_complaint_count, power_relationship$log_inspection_count, use = "complete.obs"))
+cat("\nlog of risk 1 count vs log of inspection correlation: ", cor(power_relationship$log_risk_1_count, power_relationship$log_inspection_count, use = "complete.obs"))
+cat("\nlog of unemployment percentage vs log of inspection correlation: ", cor(merged_data_clean$log_percent_aged_16_unemployed, merged_data_clean$log_inspection_count, use = "complete.obs"))
+cat("\nlog of hardship_index vs log of inspection correlation: ", cor(power_relationship$log_hardship_index, power_relationship$log_inspection_count, use = "complete.obs"))
 ```
 
 Splitting Data into test and train data
@@ -60,5 +140,42 @@ cat("\nr_squared = ", summary(extended_model)$r.squared)
 ```{r}
 # anova test to compare models
 anova_result <- anova(lr_model, extended_model)
-print(anova_result)
+cat("P-value: ", anova_result$`Pr(>F)`)
+```
+
+```{r}
+log_inspection_count <- test_data$log_inspection_count
+plot_data <- data.frame(log_inspection_count, pred)
+ggplot(plot_data, aes(x = log_inspection_count, y = pred)) +
+  geom_point(alpha = 0.25) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "black") +
+  labs(title = "Predicted Log Inspection Count vs. Log Inspection Count",
+       x = "Median Income ($100,000)",
+       y = "Predicted Median House Price ($100,000)") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 20),
+    axis.title.x = element_text(size = 16),
+    axis.title.y = element_text(size = 16)
+  ) +
+  coord_cartesian(xlim = c(0, 16))
+
+plot_data_extended <- data.frame(log_inspection_count, pred_2)
+ggplot(plot_data_extended, aes(x = log_inspection_count, y = pred_2)) +
+  geom_point(alpha = 0.25) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "black") +
+  labs(title = "Predicted Log Inspection Count vs. Log Inspection Count",
+       x = "Median Income ($100,000)",
+       y = "Predicted Median House Price ($100,000)") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 20),
+    axis.title.x = element_text(size = 16),
+    axis.title.y = element_text(size = 16)
+  ) +
+  coord_cartesian(xlim = c(0, 16))
+```
+
+```{r}
+
 ```
