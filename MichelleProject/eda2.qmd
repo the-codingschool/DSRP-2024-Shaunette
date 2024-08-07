@@ -4,6 +4,7 @@ library(ggplot2)
 library(readr)
 library(data.table)
 library(dplyr)
+library(tidyr)
 library(janitor)
 
 readRDS("/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/MichelleProject/cfs_clean.rds")
@@ -98,7 +99,17 @@ risk_post_covid <- cfs_clean |>
 risk_1_per_location <- cfs_clean |>
   filter(risk_numeric == 1) %>%
   group_by(latitude, longitude) %>%
-  summarise(risk_1_count = n(), .groups = 'drop')
+  summarise(risk_1_count = n(), .groups = 'drop') 
+
+risk_2_per_location <- cfs_clean |>
+  filter(risk_numeric == 2) %>%
+  group_by(latitude, longitude) %>%
+  summarise(risk_2_count = n(), .groups = 'drop')
+
+risk_3_per_location <- cfs_clean |>
+  filter(risk_numeric == 3) %>%
+  group_by(latitude, longitude) %>%
+  summarise(risk_3_count = n(), .groups = 'drop')
 
 complaints_per_location <- cfs_clean %>%
   filter(inspection_type == "Complaint" | inspection_type == "Complaint Re-Inspection") %>%
@@ -116,11 +127,13 @@ aggregated_data <- locs %>%
    unique() %>%
    left_join(aggregated_data, by = c("latitude", "longitude")) %>%
    left_join(risk_1_per_location, by = c("latitude", "longitude")) %>%
+   left_join(risk_2_per_location, by = c("latitude", "longitude")) %>%
+   left_join(risk_3_per_location, by = c("latitude", "longitude")) %>%
    left_join(complaints_per_location, by = c("latitude", "longitude")) %>%
    full_join(unemployment, by = c("quarter" = "community_area_name"), relationship = "many-to-many")
  
  merged_data <- merged_data |>
-   select('longitude', 'latitude', 'quarter', 'inspection_count', 'complaint_count', 'percent_aged_16_unemployed', 'hardship_index', 'risk_1_count')
+   select('longitude', 'latitude', 'quarter', 'inspection_count', 'complaint_count', 'percent_aged_16_unemployed', 'hardship_index', 'risk_1_count', 'risk_2_count', 'risk_3_count', 'place_id')
  print(head(merged_data))
  View(merged_data)
  #saveRDS(merged_data, "/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/MichelleProject/merged_data.rds")
@@ -134,60 +147,49 @@ sum(is.na(merged_data$complaint_count)) #9829 NA values
 sum(is.na(merged_data$percent_aged_16_unemployed)) #2843 NA values
 sum(is.na(merged_data$hardship_index)) #2844 NA values
 sum(is.na(merged_data$risk_1_count)) #7094 NA values
+sum(is.na(merged_data$risk_2_count)) #12874 NA values
+sum(is.na(merged_data$risk_3_count)) #11933 NA values
 
-# create new dataset without na values
-merged_data_clean <- na.omit(merged_data) 
-dim(merged_data_clean) # 5123 rows and 6 columns
-merged_data_clean <- merged_data_clean |>
+# MERGED DATASET WITH COUNTS OF RISK AND COMPLAINTS
+merged_data_clean <- merged_data |>
   subset(!quarter=="O'Hare") |> # removing outlier
   summarise(area = quarter,
             inspection_count = inspection_count,
-            percent_complaint = complaint_count/inspection_count*100,
-            percent_risk_1 = risk_1_count/inspection_count*100,
+            complaint_count = complaint_count,
+            risk_1_count = risk_1_count,
             percent_aged_16_unemployed = percent_aged_16_unemployed,
-            hardship_index = hardship_index) 
-  
-View(merged_data_clean)
-colnames(merged_data_clean)
+            hardship_index = hardship_index) |>
+  na.omit()
 saveRDS(merged_data_clean, "/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/MichelleProject/merged_data_clean.rds")
+dim(merged_data_clean) # 5123 rows and 9 columns
 
-# convert column values to log to account for differences in magnitude
-merged_data_log <- merged_data |>
+# MERGED DATA WITH WEIGHTED RISK COLUMN 
+merged_data_weighted_risk <- merged_data |>
+  subset(!quarter=="O'Hare") |>
   na.omit() |>
-  summarise(quarter = quarter,
-            log_inspection_count = log(inspection_count),
-            log_complaint_count = log(complaint_count),
-            log_risk_1_count = log(risk_1_count),
-            percent_aged_16_unemployed = percent_aged_16_unemployed,
-            hardship_index = hardship_index) 
-head(merged_data_clean_log)
-#saveRDS(merged_data_log, "/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/MichelleProject/merged_data_log.rds")
-
-# dataset grouped by quarter instead of unique longitude and latitude
-merged_data_by_quarter <- merged_data |>
-  na.omit() |>
-  group_by(quarter) |>
-  summarise(total_inspections = sum(inspection_count),
-            total_complaints = sum(complaint_count),
-            total_risk_1 = sum(risk_1_count),
-            percent_aged_16_unemployed = mean(percent_aged_16_unemployed, na.rm = TRUE),
-            hardship_index = mean(hardship_index, na.rm = TRUE))
-head(merged_data_by_quarter)
-#saveRDS(merged_data_by_quarter, "/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/MichelleProject/merged_data_by_quarter.rds")
+  group_by(place_id) |>
+  summarise(area = quarter,
+            inspection_count = inspection_count,
+            complaint_count = complaint_count,
+            weighted_risk = risk_1_count*0.5 + risk_2_count*0.375 + risk_3_count*0.125,
+            percent_aged_16_unemployed = mean(percent_aged_16_unemployed),
+            hardship_index = mean(hardship_index))
+View(merged_data_weighted_risk)
+saveRDS(merged_data_weighted_risk, "/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/MichelleProject/merged_data_weighted_risk.rds")
 
 ```
 
 Graphing Relationship between Unemployment and Inspection Counts
 
 ```{r}
-ggplot(merged_data_clean, aes(x = percent_complaint, y = inspection_count)) +
+ggplot(merged_data_clean, aes(x = complaint_count, y = inspection_count)) +
   geom_point(alpha = 0.5, size = 0.5) +
   labs(title = "complaint vs inspection count",
        x = "complaint percentage %",
        y = "inspection count") +
   theme_minimal()
 
-ggplot(merged_data_clean, aes(x = percent_risk_1, y = inspection_count)) +
+ggplot(merged_data_clean, aes(x = risk_1_count, y = inspection_count)) +
   geom_point(alpha = 0.5, size = 0.5) +
   labs(title = "risk 1 vs inspection count",
        x = "risk 1 percentage %",
@@ -207,12 +209,6 @@ ggplot(merged_data_clean, aes(x = hardship_index, y = inspection_count)) +
        x = "hardship index",
        y = "inspection count") +
   theme_minimal()
-
-correlation <- cor(merged_data_clean$percent_aged_16_unemployed, merged_data_clean$inspection_count, use = "complete.obs")
-print(correlation)
-
-correlation2 <- cor(merged_data_clean$hardship_index, merged_data_clean$inspection_count, use = "complete.obs")
-print(correlation2)
 ```
 
 ```{r}
