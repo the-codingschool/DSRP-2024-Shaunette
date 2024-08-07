@@ -3,31 +3,34 @@ library(dplyr)
 library(janitor)
 library(ggplot2)
 library(tidyr)
-#library(streamgraph)
-#install.packages(streamgraph)
-library(viridis)
-library(hrbrthemes)
-library(plotly)
+library(stringr)
 
+# creating a data set with no empty values and only Daycare, Bar, School and resuturants
 csf_no_blank <- csf_new[csf_new$Risk != '', ]
 csf_select <- csf_no_blank %>% filter(Facility_Type == c('Restaurant', 'Bar', 'School', 'Daycare'))
 
-#Finding proportion of pass or fail depending for each specifc location ####
-length(get_dupes(csf_select, 'Location'))
-length(unique(csf_select$Address))
+# # Define a function that extracts the parts of the string you're interested in
+# extract_violations <- function(input) {
+#   # Split the sample_input string into separate violations based on the pattern
+#   violations <- unlist(strsplit(input, "\\|"))
+#   
+#   # Extract the parts that start with a number followed by a dot and occur before "- Comments"
+#   extracted <- str_extract(violations, "\\d+\\. [^\\-]+")
+#   
+#   # Remove NA values
+#   extracted <- extracted[!is.na(extracted)]
+#   
+#   return(extracted)
+# }
+# 
+# # Apply this function to the sample_input string
+# violations
+# extracted_violations <- extract_violations(csf_select$Violation)
+# 
+# # Create a dataframe with the extracted violations and number them
+# violation_df <- data.frame(Number = 1:length(extracted_violations), Violation = extracted_violations, stringsAsFactors = FALSE)
+# tail(violation_df)
 
-#buisnesses <- unique(csf_select$Address)
-
-
-#csf_resturant %>% 
-  #ggplot(aes(Risk, fill = Facility_Type)) + 
-  #geom_point() 
-
-csf_no_blank %>% 
-  ggplot(aes(Risk, State)) + 
-  geom_point() 
-
-# How have risk levels changed over the years in Restaurants, Bars, School and Daycare
 
 # Time series plot
 tail(csf_select)
@@ -264,8 +267,7 @@ risk_rate <- csf_select %>%
 
 #correlation graph between two variables 
 line(risk_rate$riskOne, pass_data$Pass_Rate)
-pass_data
-risk_rate
+
 # risk_rate %>% filter(Facility_Type == 'Bar') %>% ggplot()  +
 #   geom_point(mapping = aes(x = Year, y = Risk__Rate))
 
@@ -283,7 +285,7 @@ combine_data_risk_pass
 combine_data_risk_pass %>% filter(Facility_Type == 'Daycare') %>% 
   ggplot(aes(x = Pass_Rate, y = Risk_One_Rate, color = Year)) +
   geom_point() +
-  geom_smooth(aes(Pass_Rate,Risk_One_Rate), method="lm", se=F) +
+  #geom_smooth(aes(Pass_Rate,Risk_One_Rate), method="lm", se=F) +
   ggtitle("Correaltion Between Daycare Risk 1 Rate and Overall PassRate from 2010 - 2024")
 
 
@@ -315,7 +317,8 @@ combine_data_risk_pass %>% filter(Facility_Type == 'Bar') %>%
 combine_data_risk_pass %>% filter(Facility_Type == 'Bar') %>% 
   ggplot(aes(x = Pass_Rate, y = Risk_Three_Rate, color = Year)) +
   geom_point() + 
-  geom_smooth(aes(Pass_Rate,Risk_Three_Rate), method="lm", se=F)
+  geom_smooth(aes(Pass_Rate,Risk_Three_Rate), method="lm", se=F, color = 'orange') +
+  ggtitle("Correaltion Between Risk 3 Rate and Overall Pass Rate in Bars from 2010 - 2024")
 
 ## School
 combine_data_risk_pass %>% filter(Facility_Type == 'School') %>% 
@@ -337,7 +340,9 @@ combine_data_risk_pass %>% filter(Facility_Type == 'School') %>%
 combine_data_risk_pass %>% filter(Facility_Type == 'Restaurant') %>% 
   ggplot(aes(x = Pass_Rate, y = Risk_One_Rate, color = Year)) +
   geom_point() + 
-  geom_smooth(aes(Pass_Rate,Risk_One_Rate), method="lm", se=F)
+  geom_smooth(aes(Pass_Rate,Risk_One_Rate), method="lm", se=F, color = 'orange') +
+  ggtitle("                          Correaltion Between Risk 1 Rate and 
+                  Overall Pass Rate in Restaurants from 2010 - 2024")
 
 combine_data_risk_pass %>% filter(Facility_Type == 'Restaurant') %>% 
   ggplot(aes(x = Pass_Rate, y = Risk_Two_Rate, color = Year)) +

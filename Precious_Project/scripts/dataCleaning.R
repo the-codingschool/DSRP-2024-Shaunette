@@ -6,6 +6,8 @@ library(readr)
 
 #install.packages('lubridate')
 library(lubridate)
+library(stringr)
+
 
 csf <-  read.csv("C:/Users/preci/Desktop/W O N D E R/DSRP-2024-Shaunette/Precious_Project/data/Food_Inspections.csv")
 head(csf)
@@ -95,6 +97,9 @@ csf_new <- csf_new %>%
                    Facility_Type == 'Daycare Above and Under 2 Years' ~ 'Daycare',
                    Facility_Type == 'Daycare (2 - 6 Years)' ~ 'Daycare',
                    Facility_Type == 'Daycare (2 Years)' ~ 'Daycare',
+                   Facility_Type == 'Daycare (Under 2 Years)' ~ 'Daycare',
+                   Facility_Type == 'DAYCARE' ~ 'Daycare',
+                   Facility_Type == 'Daycare Combo 1586' ~ 'Daycare',
                    Facility_Type == 'DAYCARE 2 YRS TO 12 YRS' ~ 'Daycare',
                    Facility_Type == 'Daycare (Under 2 Years)' ~ 'Daycare',
                    Facility_Type == 'DAYCARE 2-6, UNDER 6' ~ 'Daycare',
@@ -107,6 +112,9 @@ csf_new <- csf_new %>%
                    Facility_Type == 'Daycare Combo 1586' ~ 'Daycare',
                    Facility_Type == 'Daycare Night' ~ 'Daycare',
                    Facility_Type == 'Day Care Combo (1586)' ~ 'Daycare',
+                   Facility_Type == 'DAYCARE 6 WKS-5YRS' ~ 'Daycare',
+                   Facility_Type == 'Day Care Facility' ~ 'Daycare',
+                   
                    Facility_Type == 'CHURCH/DAY CARE' ~ 'Daycare',
                    Facility_Type == 'DAY CARE' ~ 'Daycare',
                    Facility_Type == 'DAY CARE 1023' ~ 'Daycare',
@@ -144,6 +152,15 @@ csf_new <- csf_new %>%
                    Facility_Type == 'GYM' ~ 'Gym',
                    Facility_Type == 'liquor store' ~ 'Bar',
                    Facility_Type == 'LIQUORE STORE/BAR' ~ 'Bar',
+                   Facility_Type == 'BAR' ~ 'Bar',
+                   Facility_Type == 'LIQUOR/GROCERY STORE/BAR' ~ 'Bar',
+                   Facility_Type == 'BAR/GRILL' ~ 'Bar',
+                   Facility_Type == 'RETAIL WINE/WINE BAR' ~ 'Bar',
+                   Facility_Type == 'WINE TASTING BAR' ~ 'Bar',
+                   Facility_Type == 'tavern' ~ 'Bar',
+                   Facility_Type == 'TAVERN/PACKAGED GOODS' ~ 'Bar',
+                   Facility_Type == 'TAP room/tavern/liquor store' ~ 'Bar',
+                   
                    Facility_Type == 'TAVERN/1006' ~ 'Bar',
                    Facility_Type == '(convenience store)' ~ 'Convenience Store',
                    Facility_Type == 'GROCERY & RESTAURANT' ~ 'Restaurant',
@@ -153,11 +170,23 @@ csf_new <- csf_new %>%
                    Facility_Type == 'GROCERY & RESTAURANT' ~ 'Restaurant',
                    
                    Facility_Type == 'bakery/restaurant' ~ 'Restaurant',
-                   Facility_Type == 'TENT RSTAURANT' ~ 'Restaurant',
+                   Facility_Type == 'TENT RESTAURANT' ~ 'Restaurant',
+                   
+                   Facility_Type == 'AFTER SCHOOL CARE' ~ 'School',
+                   Facility_Type == 'CHURCH/AFTER SCHOOL PROGRAM' ~ 'School',
+                   Facility_Type == 'CHARTER SCHOOL' ~ 'School',
+                   Facility_Type == 'PRIVATE SCHOOL' ~ 'School',
+                   Facility_Type == 'school cafeteria' ~ 'School',
+                   Facility_Type == 'School Cafeteria' ~ 'School',
+                   Facility_Type == 'BEFORE AND AFTER SCHOOL PROGRAM' ~ 'School',
+                   Facility_Type == 'after school program' ~ 'School',
+                   Facility_Type == 'AFTER SCHOOL PROGRAM' ~ 'School',
+                   
                    TRUE ~ Facility_Type
                    
   ))
-#unique(csf_new$Facility_Type)
+
+unique(csf_new$Facility_Type)
 #colnames(csf_new)
 
 
@@ -179,3 +208,4 @@ csf_new$Inspection_Date <- as.Date(csf_new$Inspection_Date[],format = '%m/%d/%Y'
 csf_new$Year <- as.numeric(format(csf_new$Inspection_Date,'%Y'))
 head(csf_new$Year)
 tail(csf_new$Inspection_Date)
+
