@@ -1,0 +1,164 @@
+```{r}
+# Load libraries
+library(ggplot2)
+library(readr)
+library(data.table)
+library(dplyr)
+library(janitor)
+
+cfs <- read.csv("/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/data/Food_Inspections.csv")
+print(head(cfs, 5))
+```
+
+```{r}
+print(str(cfs))
+print(dim(cfs)) # 275806 rows x 17 cols
+```
+
+```{r}
+# cleaning column names
+cfs_clean <- cfs |>
+  clean_names()
+
+# formatting inspection date column from character to Date
+print(class(cfs$Inspection.Date))
+cfs_clean$inspection_date <- as.Date(cfs_clean$inspection_date, format = "%m/%d/%Y")
+print(class(cfs_clean$inspection_date))
+
+# filling blank violation values with NA
+cfs_clean$violations <- na_if(cfs_clean$violations, "")
+
+print(head(cfs))
+print(head(cfs_clean))
+
+# checking for duplicate inspection ids
+duplicates_id <- cfs_clean |>
+  get_dupes(inspection_id)
+
+#View(cfs_clean)
+```
+
+```{r}
+# creating new numeric risk column from charcter risk column
+cfs_clean <- cfs_clean %>%
+  mutate(risk_numeric = case_when(
+    risk == "Risk 1 (High)" ~ 1,
+    risk == "Risk 2 (Medium)" ~ 2,
+    risk == "Risk 3 (Low)" ~ 3,
+    TRUE ~ NA_real_
+  ))
+
+summary(cfs_clean$risk_numeric)
+summary(cfs_clean$results)
+
+print(head(cfs_clean))
+
+# remove 81 na values from risk_numeric column
+cfs_clean_filtered <- cfs_clean %>%
+  filter(!is.na(risk_numeric))
+         
+# Plot the inspection results by risk and status
+ggplot(cfs_clean_filtered, aes(x = factor(risk_numeric), fill = results)) +
+  geom_bar(position = "dodge", width = 0.8) +
+  labs(title = "Inspection Results by Risk Level",
+       x = "Risk Level (1-High, 2-Medium, 3-Low, 4-All)",
+       y = "Count",
+       fill = "Inspection Result") +
+  scale_fill_manual(values = c(
+    "Pass" = "blue",
+    "Out of Business" = "red",
+    "No Entry" = "grey",
+    "Fail" = "orange",
+    "Pass w/ Conditions" = "lightblue",
+    "Not Ready" = "purple",
+    "Business Not Located" = "green"
+  )) +
+  theme_minimal()
+```
+
+```{r}
+unique_names <- length(unique(cfs_clean$dba_name))
+cat("Number of unique names:", unique_names)
+
+unique(cfs_clean$risk)
+unique(cfs_clean$results)
+unique(cfs_clean$facility_type)
+```
+
+```{r}
+# Create a frequency table of DBA.Name
+inspection_table <- table(cfs_clean$dba_name)
+
+# Sort in descending order
+sorted_inspection_table <- sort(inspection_table, decreasing = TRUE)
+head(sorted_inspection_table)
+
+# Get  name w/ max number of inspections and its count
+max_inspections_name <- names(sorted_inspection_table)[1]
+max_inspections_count <- sorted_inspection_table[1]
+
+cat("DBA.Name with the maximum number of inspections:", max_inspections_name, "\n")
+cat("Number of inspections:", max_inspections_count, "\n")
+```
+
+```{r}
+saveRDS(cfs_clean, file = "/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/MichelleProject/cfs_clean.rds")
+```
+
+Grouping Places by Municipalities
+
+```{r}
+# if (!"tidygeocoder" %in% installed.packages()) {
+# install.packages("tidygeocoder")
+# }
+# 
+# library(dplyr, warn.conflicts = FALSE)
+# library(tidygeocoder)
+# 
+# coords = cfs_clean[c("latitude","longitude")]
+# 
+# exact_locs <- coords %>%
+#   reverse_geocode(lat = latitude, long = longitude, method = 'osm',address = address_found, full_results = TRUE)
+
+# saveRDS(exact_locs, file = "/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/MichelleProject/exact_locs.rds")
+```
+
+```{r}
+
+```
+
+```{r}
+unemployment <- read.csv("/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/data/Unemployment.csv")
+colnames(unemployment_clean)
+dim(unemployment)
+unemployment_clean <- unemployment |>
+  clean_names()
+colnames(unemployment_clean)
+View(unemployment_clean)
+  
+saveRDS(unemployment_clean, file = "/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/MichelleProject/unemployment_clean.rds")
+
+head(exact_locs)
+head(cfs_clean)
+saveRDS(exact_locs, file = "/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/MichelleProject/exact_locs.rds")
+```
+
+```{r}
+# formatting inspection date column from character to Date
+print(class(cfs$Inspection.Date))
+cfs_clean$inspection_date <- as.Date(cfs_clean$inspection_date, format = "%m/%d/%Y")
+print(class(cfs_clean$inspection_date))
+
+# filling blank violation values with NA
+cfs_clean$violations <- na_if(cfs_clean$violations, "")
+
+print(head(cfs))
+print(head(cfs_clean))
+
+# checking for duplicate inspection ids
+duplicates_id <- cfs_clean |>
+  get_dupes(inspection_id)
+```
+
+```         
+```

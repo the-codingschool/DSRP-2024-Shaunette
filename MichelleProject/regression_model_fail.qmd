@@ -1,0 +1,167 @@
+```{r}
+# Load necessary libraries
+library(ggplot2)
+library(caTools)
+library(dplyr)
+library(readr)
+library(downloader)
+library(FNN)
+library(readxl)
+
+# Load the dataset
+merged_data_weighted_risk <- readRDS("/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/MichelleProject/merged_data_weighted_risk.rds")
+
+# x vs y relationship
+linear_relationship <- merged_data_weighted_risk
+head(linear_relationship)
+
+# Log x vs log y for power relationship
+power_relationship <- merged_data_weighted_risk %>%
+  mutate(
+    log_inspection_count = log(inspection_count),
+    log_complaint_count = log(complaint_count),
+    log_weighted_risk = log(weighted_risk),
+    log_percent_aged_16_unemployed = log(percent_aged_16_unemployed),
+    log_hardship_index = log(hardship_index)
+  ) %>%
+  select(
+    log_inspection_count, log_complaint_count, log_weighted_risk, log_percent_aged_16_unemployed, log_hardship_index
+  )
+
+# x vs log y for exponential relationship
+exponential_relationship <- merged_data_weighted_risk %>%
+  mutate(
+    log_inspection_count = log(inspection_count)
+  ) %>%
+  select(
+    log_inspection_count, complaint_count, weighted_risk, percent_aged_16_unemployed, hardship_index
+  )
+head(exponential_relationship)
+
+```
+
+Find Correlations Between Variables - Found Power Relationship Has Highest Correlations
+
+```{r}
+# linear relationship
+cat("complaint count vs inspection correlation: ", cor(linear_relationship$complaint_count, linear_relationship$inspection_count, use = "complete.obs"))
+cat("\nweighted risk vs inspection correlation: ", cor(linear_relationship$weighted_risk, linear_relationship$inspection_count, use = "complete.obs"))
+cat("\nunemployment percentage vs inspection correlation: ", cor(linear_relationship$percent_aged_16_unemployed, linear_relationship$inspection_count, use = "complete.obs"))
+cat("\nhardship_index vs inspection correlation: ", cor(linear_relationship$hardship_index, linear_relationship$inspection_count, use = "complete.obs"))
+
+# power relationship
+cat("\n\nlog of complaint count vs log of inspection correlation: ", cor(power_relationship$log_complaint_count, power_relationship$log_inspection_count, use = "complete.obs"))
+cat("\nlog of weighted risk vs log of inspection correlation: ", cor(power_relationship$log_weighted_risk, power_relationship$log_inspection_count, use = "complete.obs"))
+cat("\nlog of unemployment percentage vs log of inspection correlation: ", cor(power_relationship$log_percent_aged_16_unemployed, power_relationship$log_inspection_count, use = "complete.obs"))
+cat("\nlog of hardship_index vs log of inspection correlation: ", cor(power_relationship$log_hardship_index, power_relationship$log_inspection_count, use = "complete.obs"))
+
+# exponential relationship
+cat("\n\ncomplaint count vs log of inspection correlation: ", cor(exponential_relationship$complaint_count, exponential_relationship$log_inspection_count, use = "complete.obs"))
+cat("\nweighted risk vs log of inspection correlation: ", cor(exponential_relationship$weighted_risk, exponential_relationship$log_inspection_count, use = "complete.obs"))
+cat("\nunemployment percentage vs log of inspection correlation: ", cor(exponential_relationship$percent_aged_16_unemployed, exponential_relationship$log_inspection_count, use = "complete.obs"))
+cat("\nhardship_index vs log of inspection correlation: ", cor(exponential_relationship$hardship_index, exponential_relationship$log_inspection_count, use = "complete.obs"))
+```
+
+```{r}
+# Linear Relationship:
+model_linear <- lm(inspection_count ~ complaint_count + weighted_risk + percent_aged_16_unemployed + hardship_index, data = linear_relationship)
+r_squared_linear <- summary(model_linear)$r.squared
+cat("Coefficient of Determination (R2): ", r_squared_linear, "\n")
+# residual plot 
+ggplot(model_linear, aes(.fitted, .resid)) +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  labs(title = "Residual Plot", x = "Fitted values", y = "Residuals")
+
+# Power Relationship: 
+model_power <- lm(log_inspection_count ~ log_complaint_count + log_weighted_risk + log_percent_aged_16_unemployed + log_hardship_index, data = power_relationship)
+r_squared_power <- summary(model_power)$r.squared
+cat("Coefficient of Determination (R2): ", r_squared_power, "\n")
+# residual plot 
+ggplot(model_power, aes(.fitted, .resid)) +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  labs(title = "Residual Plot", x = "Fitted values", y = "Residuals")
+
+# Exponential Relationship: 
+model_exponential <- lm(log_inspection_count ~ complaint_count + weighted_risk + percent_aged_16_unemployed + hardship_index, data = exponential_relationship)
+r_squared_exponential <- summary(model_exponential)$r.squared
+cat("Coefficient of Determination (R2): ", r_squared_exponential, "\n")
+# residual plot 
+ggplot(model_exponential, aes(.fitted, .resid)) +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  labs(title = "Residual Plot", x = "Fitted values", y = "Residuals")
+
+```
+
+```{r}
+
+```
+
+Plotting Power Relationship
+
+```{r}
+ggplot(power_relationship, aes(x = log_complaint_count, y = log_inspection_count)) +
+  geom_point(alpha = 0.5, size = 0.5) +
+  labs(title = "complaint vs inspection count",
+       x = "log of complaint %",
+       y = "log of inspection count") +
+  theme_minimal()
+
+ggplot(power_relationship, aes(x = log_weighted_risk, y = log_inspection_count)) +
+  geom_point(alpha = 0.5, size = 0.5) +
+  labs(title = "risk vs inspection count",
+       x = "log of weighted risk",
+       y = "log of inspection count") +
+  theme_minimal()
+
+ggplot(power_relationship, aes(x = log_percent_aged_16_unemployed, y = log_inspection_count)) +
+  geom_point(alpha = 0.5, size = 0.5) +
+  labs(title = "unemployment % vs inspection count",
+       x = "log of unemployment %",
+       y = "log of inspection count") +
+  theme_minimal()
+
+ggplot(power_relationship, aes(x = log_hardship_index, y = log_inspection_count)) +
+  geom_point(alpha = 0.5, size = 0.5) +
+  labs(title = "hardship index vs inspection count",
+       x = "log of hardship index",
+       y = "log of inspection count") +
+  theme_minimal()
+```
+
+Splitting Data into test and train data
+
+```{r}
+split <- sample.split(power_relationship$log_inspection_count, SplitRatio = 0.8)
+train_data <- subset(power_relationship, split == TRUE)
+test_data <- subset(power_relationship, split == FALSE)
+```
+
+Creating Linear Models
+
+```{r}
+#Linear Model #1 - uses 2 predicting variables
+initial_model <- lm(log_inspection_count ~ log_weighted_risk + log_complaint_count, data = train_data)
+initial_pred <- predict(initial_model, newdata = test_data)
+
+#Linear Model #2 - uses 4 predicting variables
+extended_model <- lm(log_inspection_count ~ log_weighted_risk + log_complaint_count + log_hardship_index + log_percent_aged_16_unemployed, data = train_data)
+extended_pred <- predict(extended_model, newdata = test_data)
+```
+
+```{r}
+# linear model 1
+cat("mse = ", mean((test_data$log_inspection_count - initial_pred)^2))
+cat("\nr_squared = ", summary(initial_model)$r.squared)
+
+# linear model 2
+cat("\nmse = ", mean((test_data$log_inspection_count - extended_pred)^2))
+cat("\nr_squared = ", summary(extended_model)$r.squared)
+```
+
+```{r}
+anova_result <- anova(initial_model, extended_model)
+print(anova_result)
+```
