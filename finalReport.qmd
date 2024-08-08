@@ -58,7 +58,7 @@ ggplot(cfs_clean, aes(x = longitude, y = latitude)) +
 ggplot(merged_data_clean, aes(x = log_complaint_count, y = log_inspection_count)) +
   geom_point(alpha = 0.6, size = 0.5, color = "blue") +  
   geom_smooth(method = "lm", se = FALSE, color = "red", linetype = "dashed") +  
-  labs(title = "Relationship of Complaint and Inspection Counts",
+  labs(title = "Relationship of Complaint & Inspection Counts",
        subtitle = "Analysis of log-transformed counts",
        x = "Log of Complaint Count",
        y = "Log of Inspection Count",
@@ -80,7 +80,7 @@ ggplot(merged_data_clean, aes(x = log_complaint_count, y = log_inspection_count)
 ggplot(merged_data_clean, aes(x = log_risk_1_count, y = log_inspection_count)) +
   geom_point(alpha = 0.6, size = 1, color = "blue") +
   geom_smooth(method = "lm", se = FALSE, color = "red", linetype = "dashed") +
-  labs(title = "Relationship of Risk 1 and Inspection Counts",
+  labs(title = "Relationship of Risk 1 & Inspection Counts",
        subtitle = "Analysis of log-transformed counts",
        x = "Log of Risk 1 Count",
        y = "Log of Inspection Count",
@@ -101,7 +101,7 @@ ggplot(merged_data_clean, aes(x = log_risk_1_count, y = log_inspection_count)) +
 #|echo: false
 ggplot(merged_data_clean, aes(x = log_percent_aged_16_unemployed, y = log_inspection_count)) +
   geom_point(alpha = 0.6, size = 1, color = "blue") +
-  labs(title = "Relationship of Unemployment Percentage and Inspection Counts",
+  labs(title = "Relationship of Unemployment Rates & Inspection Counts",
        subtitle = "Analysis of log-transformed counts",
        x = "Log of Unemployment Percentage",
        y = "Log of Inspection Count",
@@ -167,7 +167,29 @@ cat("Mean Squared Error (MSE) = ", mean((test_data$log_inspection_count - pred_2
 cat("R-squared = ", summary(extended_model)$r.squared, "\n")
 ```
 
-**Figure 3b: Comparing Linear Models** The ANOVA test between the two models yielded a significant result (P-value = 0.000409 \< α = 0.05), suggesting that the additional predictors of log of percent of unemployment and log of hardship index in Model 2 significantly improved the model fit compared to Model 1.
+Figure 3b: Plotting Predicted Inspection Count vs Actual Inspection Count
+
+```{r}
+plot_data_extended <- data.frame(log_inspection_count, pred_2)
+ggplot(plot_data_extended, aes(x = log_inspection_count, y = pred_2)) +
+  geom_point(alpha = 0.25, color = "blue", size = 0.75) +
+   geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") +
+  labs(
+    title = "Predicted Log Inspection Count vs. Actual Log Inspection Count",
+    x = "Actual Log Inspection Count",
+    y = "Predicted Log Inspection Count"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 16, hjust = 0.5),
+    axis.title.x = element_text(size = 14),
+    axis.title.y = element_text(size = 14)
+  ) +
+  coord_cartesian(xlim = c(0, 16))
+
+```
+
+**Figure 3c: Comparing Linear Models** The ANOVA test between the two models yielded a significant result (P-value = 0.000409 \< α = 0.05), suggesting that the additional predictors of log of percent of unemployment and log of hardship index in Model 2 significantly improved the model fit compared to Model 1.
 
 ```{r}
 #| code-fold: true
@@ -186,4 +208,4 @@ The data supporting the findings of this study is available at \_\_\_ and \_\_. 
 
 ## Acknowledgements
 
-I would like to acknowledge The Coding School for the opportunity to learn about data science and collaborate with the Columbia University Data Science Institute; Sarah Parker, Pavithra \_\_\_, and Shruthi \_\_\_ for teaching me R; and Professor Shaunette Ferguson for incredible guidance on this project and teaching me about the applications of data science in businesses.
+I would like to acknowledge The Coding School for the opportunity to learn about data science and collaborate with the Columbia University Data Science Institute; Sarah Parker for teaching me R; and Professor Shaunette Ferguson for incredible guidance on this project and teaching me about the applications of data science in businesses.

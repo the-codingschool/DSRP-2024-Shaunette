@@ -129,8 +129,11 @@ Grouping Places by Municipalities
 
 ```{r}
 unemployment <- read.csv("/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/data/Unemployment.csv")
+colnames(unemployment_clean)
+dim(unemployment)
 unemployment_clean <- unemployment |>
   clean_names()
+colnames(unemployment_clean)
 View(unemployment_clean)
   
 saveRDS(unemployment_clean, file = "/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/MichelleProject/unemployment_clean.rds")
