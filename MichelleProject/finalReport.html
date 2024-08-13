@@ -8,7 +8,7 @@
 
 <meta name="author" content="Michelle Jayaraj">
 
-<title>Economic Activity and Historical Risk Factors: Key Factors of Food Safety Oversight in Chicago</title>
+<title>Economic Activity and Historical Risk Factors: Key Influences of Food Safety Oversight in Chicago</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -80,7 +80,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Economic Activity and Historical Risk Factors: Key Factors of Food Safety Oversight in Chicago</h1>
+<h1 class="title">Economic Activity and Historical Risk Factors: Key Influences of Food Safety Oversight in Chicago</h1>
 </div>
 
 
@@ -116,38 +116,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="results">Results</h2>
 <p><strong>Figure 1: Geographic Distribution of Inspections in Chicago</strong> This plot illustrates the geographic distribution of food safety inspections across Chicago, visualized using a density heatmap. The density of inspections is shown with colors ranging from yellow (low density) to blue (high density), indicating the number of inspections conducted in various regions, measured by longitude and latitude. The heatmap reveals that the highest concentration of inspections occurs at about 41.887, -87.625, as indicated by the blue and purple areas. This spatial analysis of Chicago provides a visual context in the variance of inspection counts over different Chicago regions.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#|echo: false</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co"># loading libraries and data</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(caTools)</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(downloader)</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(caTools)</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(FNN)</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readxl)</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>cfs_clean <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">"/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/MichelleProject/cfs_clean.rds"</span>)</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>merged_data_clean <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">"/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/MichelleProject/merged_data_clean.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">#|echo: false</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(cfs_clean, <span class="fu">aes</span>(<span class="at">x =</span> longitude, <span class="at">y =</span> latitude)) <span class="sc">+</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bin2d</span>(<span class="at">bins =</span> <span class="dv">30</span>, <span class="at">alpha =</span> <span class="fl">0.8</span>) <span class="sc">+</span>  </span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_gradient</span>(<span class="at">low =</span> <span class="st">"yellow"</span>, <span class="at">high =</span> <span class="st">"blue"</span>) <span class="sc">+</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Geographic Distribution of Inspections"</span>,</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Longitude"</span>,</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Latitude"</span>,</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill =</span> <span class="st">"Density"</span>) <span class="sc">+</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># changing axes to count by 0.05</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="fl">87.9</span>, <span class="sc">-</span><span class="fl">87.5</span>, <span class="at">by =</span> <span class="fl">0.05</span>), </span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>                     <span class="at">labels =</span> <span class="cf">function</span>(x) <span class="fu">sprintf</span>(<span class="st">"%.2f"</span>, x)) <span class="sc">+</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="fl">41.7</span>, <span class="fl">42.0</span>, <span class="at">by =</span> <span class="fl">0.05</span>), </span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>                     <span class="at">labels =</span> <span class="cf">function</span>(y) <span class="fu">sprintf</span>(<span class="st">"%.2f"</span>, y)) <span class="sc">+</span></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 956 rows containing non-finite outside the scale range
-(`stat_bin2d()`).</code></pre>
-</div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -158,26 +126,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p><strong>Figure 2a: Relationship Between Complaint and Inspection Count</strong> This plot illustrates the relationship between the log-transformed counts of complaints and the log-transformed inspection counts. The blue points represent individual data points, while the red dashed line indicates the clear linear trend. There is a positive correlation of 0.498662 between these variables. This suggests that a establishments with higher complaint counts may tend to undergo more inspections.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">#|echo: false</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(merged_data_clean, <span class="fu">aes</span>(<span class="at">x =</span> log_complaint_count, <span class="at">y =</span> log_inspection_count)) <span class="sc">+</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.6</span>, <span class="at">size =</span> <span class="fl">0.5</span>, <span class="at">color =</span> <span class="st">"blue"</span>) <span class="sc">+</span>  </span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">color =</span> <span class="st">"red"</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span>  </span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Relationship of Complaint and Inspection Counts"</span>,</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Analysis of log-transformed counts"</span>,</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Log of Complaint Count"</span>,</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Log of Inspection Count"</span>,</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>       <span class="at">caption =</span> <span class="st">"Source: City of Chicago's Health and Human Services"</span>) <span class="sc">+</span> </span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">15</span>) <span class="sc">+</span> </span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="dv">1</span>, <span class="at">face =</span> <span class="st">"bold"</span>),  </span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>),  </span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.caption =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="dv">1</span>), </span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.title.x =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>), </span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.title.y =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>)</span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>`geom_smooth()` using formula = 'y ~ x'</code></pre>
-</div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -188,26 +136,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p><strong>Figure 2b: Relationship Between Hardship Index and Inspection Counts</strong> This plot illustrates the relationship between the log-transformed counts of Risk 1 results (high risk classification) and the log-transformed inspection counts. The blue points represent individual data points, while the red dashed line indicates the clear linear trend. There is a strong positive correlation of 0.8231694 between these variables. This suggests that establishments with higher Risk 1 counts tend to undergo more inspections.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">#|echo: false</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(merged_data_clean, <span class="fu">aes</span>(<span class="at">x =</span> log_risk_1_count, <span class="at">y =</span> log_inspection_count)) <span class="sc">+</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.6</span>, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">color =</span> <span class="st">"blue"</span>) <span class="sc">+</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">color =</span> <span class="st">"red"</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Relationship of Risk 1 and Inspection Counts"</span>,</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Analysis of log-transformed counts"</span>,</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Log of Risk 1 Count"</span>,</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Log of Inspection Count"</span>,</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>       <span class="at">caption =</span> <span class="st">"Source: City of Chicago's Health and Human Services"</span>) <span class="sc">+</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">15</span>) <span class="sc">+</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>, <span class="at">face =</span> <span class="st">"bold"</span>),</span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>),</span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.caption =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="dv">1</span>),</span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.title.x =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>),</span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.title.y =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>),</span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>`geom_smooth()` using formula = 'y ~ x'</code></pre>
-</div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -218,22 +146,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p><strong>Figure 2c: Relationship Between Hardship Index and Inspection Counts</strong> This plot shows the relationship between the log-transformed percentages of unemployment among individuals aged 16 and older and the log-transformed inspection counts. The blue points depict individual data points. With a weak negative correlation of -0.06222899, there is no clear linear trend, suggesting that other factors might play a more significant role in determining the frequency of inspections. Unemployment percentage alone does not provide a strong explanatory power for the variance in inspection counts.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">#|echo: false</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(merged_data_clean, <span class="fu">aes</span>(<span class="at">x =</span> log_percent_aged_16_unemployed, <span class="at">y =</span> log_inspection_count)) <span class="sc">+</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.6</span>, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">color =</span> <span class="st">"blue"</span>) <span class="sc">+</span></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Relationship of Unemployment Percentage and Inspection Counts"</span>,</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Analysis of log-transformed counts"</span>,</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Log of Unemployment Percentage"</span>,</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Log of Inspection Count"</span>,</span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>       <span class="at">caption =</span> <span class="st">"Source: City of Chicago's Health and Human Services"</span>) <span class="sc">+</span></span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">15</span>) <span class="sc">+</span></span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>, <span class="at">face =</span> <span class="st">"bold"</span>),</span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>),</span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.caption =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="dv">1</span>),</span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.title.x =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>),</span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.title.y =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>)</span>
-<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -244,22 +156,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p><strong>Figure 2d: Relationship Between Hardship Index and Inspection Counts</strong> This plot depicts the relationship between the log-transformed hardship index and the log-transformed inspection counts. The blue points represent individual data points. Similar to the unemployment percentage, with a weak negative correlation of -0.08902566, there is no clear linear trend indicating that the hardship index may not provide strong explanatory power for the variance in inspection counts, either.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">#|echo: false</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(merged_data_clean, <span class="fu">aes</span>(<span class="at">x =</span> log_hardship_index, <span class="at">y =</span> log_inspection_count)) <span class="sc">+</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.6</span>, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">color =</span> <span class="st">"blue"</span>) <span class="sc">+</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Relationship of Hardship Index and Inspection Counts"</span>,</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Analysis of log-transformed counts"</span>,</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Log of Hardship Index"</span>,</span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Log of Inspection Count"</span>,</span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>       <span class="at">caption =</span> <span class="st">"Source: City of Chicago's Health and Human Services"</span>) <span class="sc">+</span></span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">15</span>) <span class="sc">+</span></span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>, <span class="at">face =</span> <span class="st">"bold"</span>),</span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>),</span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.caption =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="dv">1</span>),</span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.title.x =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>),</span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.title.y =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>)</span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -270,99 +166,75 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p><strong>Figure 3a: Creating Linear Models</strong> This analysis compared two linear regression models to predict log-transformed inspection counts using different sets of predictors. In Linear Model 1, which included log-transformed counts of Risk 1 violations and complaints, the mean squared error (MSE) was 0.0817, indicating a reasonably accurate prediction with 70.61% of the variance explained (R-squared = 0.7061). Model 2 expanded on Model 1 by adding log-transformed hardship index and unemployment percentage as additional predictors. Model 2 demonstrated a slightly improved performance with an MSE of 0.0816 and a higher R-squared of 0.7072, indicating that 70.72% of the variance in log inspection counts was explained.</p>
 <div class="cell">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Split the data</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>split <span class="ot">&lt;-</span> <span class="fu">sample.split</span>(merged_data_clean<span class="sc">$</span>log_inspection_count, <span class="at">SplitRatio =</span> <span class="fl">0.8</span>)</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>train_data <span class="ot">&lt;-</span> <span class="fu">subset</span>(merged_data_clean, split <span class="sc">==</span> <span class="cn">TRUE</span>)</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>test_data <span class="ot">&lt;-</span> <span class="fu">subset</span>(merged_data_clean, split <span class="sc">==</span> <span class="cn">FALSE</span>)</span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Linear Model #1 - uses 2 predicting variables</span></span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>lr_model <span class="ot">&lt;-</span> <span class="fu">lm</span>(log_inspection_count <span class="sc">~</span> log_risk_1_count <span class="sc">+</span> log_complaint_count, <span class="at">data =</span> train_data)</span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Linear Model #2 - uses 4 predicting variables</span></span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>extended_model <span class="ot">&lt;-</span> <span class="fu">lm</span>(log_inspection_count <span class="sc">~</span> log_hardship_index <span class="sc">+</span> log_percent_aged_16_unemployed <span class="sc">+</span> log_risk_1_count <span class="sc">+</span> log_complaint_count, <span class="at">data =</span> train_data)</span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Predicting</span></span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(lr_model, <span class="at">newdata =</span> test_data)</span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>pred_2 <span class="ot">&lt;-</span> <span class="fu">predict</span>(extended_model, <span class="at">newdata =</span> test_data)</span>
-<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Linear Model 1</span></span>
-<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Linear Model 1:</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Split the data into train and test data</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>split <span class="ot">&lt;-</span> <span class="fu">sample.split</span>(merged_data_clean<span class="sc">$</span>log_inspection_count, <span class="at">SplitRatio =</span> <span class="fl">0.8</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>train_data <span class="ot">&lt;-</span> <span class="fu">subset</span>(merged_data_clean, split <span class="sc">==</span> <span class="cn">TRUE</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>test_data <span class="ot">&lt;-</span> <span class="fu">subset</span>(merged_data_clean, split <span class="sc">==</span> <span class="cn">FALSE</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Linear Model #1 - uses 2 predicting variables</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>lr_model <span class="ot">&lt;-</span> <span class="fu">lm</span>(log_inspection_count <span class="sc">~</span> log_risk_1_count <span class="sc">+</span> log_complaint_count, <span class="at">data =</span> train_data)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Linear Model #2 - uses 4 predicting variables</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>extended_model <span class="ot">&lt;-</span> <span class="fu">lm</span>(log_inspection_count <span class="sc">~</span> log_hardship_index <span class="sc">+</span> log_percent_aged_16_unemployed <span class="sc">+</span> log_risk_1_count <span class="sc">+</span> log_complaint_count, <span class="at">data =</span> train_data)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Predicting with each model</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(lr_model, <span class="at">newdata =</span> test_data)</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>pred_2 <span class="ot">&lt;-</span> <span class="fu">predict</span>(extended_model, <span class="at">newdata =</span> test_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Linear Model 1:</code></pre>
 </div>
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Mean Squared Error (MSE) = "</span>, <span class="fu">mean</span>((test_data<span class="sc">$</span>log_inspection_count <span class="sc">-</span> pred)<span class="sc">^</span><span class="dv">2</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
 <div class="cell-output cell-output-stdout">
-<pre><code>Mean Squared Error (MSE) =  0.0842447 </code></pre>
+<pre><code>Mean Squared Error (MSE) =  0.09153626 </code></pre>
 </div>
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"R-squared = "</span>, <span class="fu">summary</span>(lr_model)<span class="sc">$</span>r.squared, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
 <div class="cell-output cell-output-stdout">
-<pre><code>R-squared =  0.7081296 </code></pre>
+<pre><code>R-squared =  0.7137212 </code></pre>
 </div>
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Linear Model 2</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Linear Model 2:</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Linear Model 2:</code></pre>
 </div>
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Mean Squared Error (MSE) = "</span>, <span class="fu">mean</span>((test_data<span class="sc">$</span>log_inspection_count <span class="sc">-</span> pred_2)<span class="sc">^</span><span class="dv">2</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
 <div class="cell-output cell-output-stdout">
-<pre><code>Mean Squared Error (MSE) =  0.08423161 </code></pre>
+<pre><code>Mean Squared Error (MSE) =  0.09161401 </code></pre>
 </div>
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"R-squared = "</span>, <span class="fu">summary</span>(extended_model)<span class="sc">$</span>r.squared, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
 <div class="cell-output cell-output-stdout">
-<pre><code>R-squared =  0.7093211 </code></pre>
+<pre><code>R-squared =  0.7149849 </code></pre>
 </div>
 </div>
-<p><strong>Figure 3b: Comparing Linear Models</strong> The ANOVA test between the two models yielded a significant result (P-value = 0.000409 &lt; α = 0.05), suggesting that the additional predictors of log of percent of unemployment and log of hardship index in Model 2 significantly improved the model fit compared to Model 1.</p>
+<p><strong>Figure 3b: Plotting Predicted Inspection Count vs Actual Inspection Count</strong> The scatter plot compares predicted vs.&nbsp;actual log inspection counts. Each blue point represents an observation, with the red dashed line indicating perfect prediction (where predicted equals actual). The spread of points around this line shows how closely the model’s predictions match reality. While predictions are somewhat accurate, the scatter suggests variability, indicating areas where the model could be improved.</p>
 <div class="cell">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>anova_result <span class="ot">&lt;-</span> <span class="fu">anova</span>(lr_model, extended_model)</span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">ANOVA Test Results:</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="finalReport_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p><strong>Figure 3c: Comparing Linear Models</strong> The ANOVA test between the two models yielded a significant result (P-value = 0.000409 &lt; α = 0.05), suggesting that the additional predictors of log of percent of unemployment and log of hardship index in Model 2 significantly improved the model fit compared to Model 1.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>anova_result <span class="ot">&lt;-</span> <span class="fu">anova</span>(lr_model, extended_model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>
-ANOVA Test Results:</code></pre>
-</div>
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"P-value: "</span>, anova_result<span class="sc">$</span><span class="st">`</span><span class="at">Pr(&gt;F)</span><span class="st">`</span>, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code>P-value:  NA 0.0002293838 </code></pre>
+ANOVA Test Results: P-value of  NA 0.000115906</code></pre>
 </div>
 </div>
 </section>
 <section id="discussion" class="level2">
 <h2 class="anchored" data-anchor-id="discussion">Discussion</h2>
-<p>The analysis of these linear regression models provides valuable insights into the factors influencing food inspection frequencies and their predictive accuracy. Model 2, incorporating additional predictors such as hardship index and unemployment percentage alongside risk 1 violations and complaints, marginally outperformed Model 1 in terms of explaining variance in log-transformed inspection counts. This suggests that economic conditions and specific risk factors significantly impact inspection frequencies, highlighting the complex interplay between regulatory oversight and socio-economic dynamics in urban settings like Chicago. One important note is that while the addition of <code>log_hardship_index</code> and <code>log_percent_aged_16_unemployed</code> to the model results in a statistically significant improvement (as shown by the ANOVA test), the practical impact on the overall fit of the model (R²) is minimal. This could mean that other factors not included in the model might have a more substantial influence on <code>log_inspection_count</code>, or that the relationships between the current variables are complex and not fully captured by the linear model. The findings underscore the practical importance of considering both economic indicators and historical risk data when allocating resources for food safety inspections. Understanding these relationships can help local health departments prioritize inspections more effectively, potentially enhancing public health outcomes by targeting high-risk areas more efficiently. Interestingly, while Model 2 yielded slightly better predictive results than anticipated, the overall findings generally align with the initial hypothesis that economic activity and past inspection history influence inspection frequency. This supports the notion that proactive monitoring and regulatory interventions are crucial in maintaining food safety standards, especially in areas with higher economic activity and perceived risk. Moving forward, it would be valuable to address the limitations inherent in the dataset, such as the significant number of missing values across key variables: 1888 missing values for quarter, 4 for inspection count, 9829 for complaint count, 2843 for percent aged 16 unemployed, 2844 for hardship index, 7094 for risk 1 count, 12874 for risk 2 count, and 11933 for risk 3 count. These missing values necessitated their omission from the analysis, potentially introducing biases and limiting the generalizability of findings. Future research could explore strategies to impute missing data more effectively or consider alternative approaches to modeling that can accommodate missingness without compromising analytical robustness. Additionally, investigating how other socio-demographic factors or temporal trends influence inspection outcomes could provide a more comprehensive understanding of food safety dynamics in urban environments.</p>
+<p>The analysis of these linear regression models provides valuable insights into the factors influencing food inspection frequencies and their predictive accuracy. Model 2, incorporating additional predictors such as hardship index and unemployment percentage alongside risk 1 violations and complaints, marginally outperformed Model 1 in terms of explaining variance in log-transformed inspection counts. This suggests that economic conditions and specific risk factors significantly impact inspection frequencies, highlighting the complex interplay between regulatory oversight and socio-economic dynamics in urban settings like Chicago. One important note is that while the addition of <code>log_hardship_index</code> and <code>log_percent_aged_16_unemployed</code> to the model results in a statistically significant improvement (as shown by the ANOVA test), the practical impact on the overall fit of the model (R²) is minimal. This could mean that other factors not included in the model might have a more substantial influence on <code>log_inspection_count</code>, or that the relationships between the current variables are complex and not fully captured by the linear model. The findings underscore the practical importance of considering both economic indicators and historical risk data when allocating resources for food safety inspections. Understanding these relationships can help local health departments prioritize inspections more effectively, potentially enhancing public health outcomes by targeting high-risk areas more efficiently. Interestingly, while Model 2 yielded slightly better predictive results than anticipated, the overall findings generally align with the initial hypothesis that economic activity and past inspection history influence inspection frequency. This supports the notion that proactive monitoring and regulatory interventions are crucial in maintaining food safety standards, especially in areas with higher economic activity and perceived risk. Moving forward, it would be valuable to address the limitations inherent in the dataset, such as the significant number of missing values across key variables: 1888 missing values for quarter, 4 for inspection count, 9829 for complaint count, 2843 for percent aged 16 unemployed, 2844 for hardship index, 7094 for risk 1 count, 12874 for risk 2 count, and 11933 for risk 3 count. These missing values necessitated their omission from the analysis, potentially introducing biases and limiting the generalizability of findings. Future research could explore strategies to impute missing data more effectively or consider alternative approaches to modeling that can accommodate the raw aspect of real-world data without compromising the analysis Additionally, investigating how other socio-demographic factors or temporal trends influence inspection outcomes could provide a more comprehensive understanding of food safety dynamics in urban environments.</p>
 </section>
 <section id="code-and-data-availability" class="level2">
 <h2 class="anchored" data-anchor-id="code-and-data-availability">Code and Data Availability</h2>
-<p>bla bla</p>
+<p>The data supporting the findings of this study is available at <a href="https://data.cityofchicago.org/Health-Human-Services/Food-Inspections/4ijn-s7e5/about_data" class="uri">https://data.cityofchicago.org/Health-Human-Services/Food-Inspections/4ijn-s7e5/about_data</a> and <a href="https://data.cityofchicago.org/Health-Human-Services/Unemployment/ymyn-s5a8" class="uri">https://data.cityofchicago.org/Health-Human-Services/Unemployment/ymyn-s5a8</a>. Codes developed in this study can be accessed at <a href="https://github.com/the-codingschool/DSRP-2024-Shaunette" class="uri">https://github.com/the-codingschool/DSRP-2024-Shaunette</a>.</p>
 </section>
 <section id="acknowledgements" class="level2">
 <h2 class="anchored" data-anchor-id="acknowledgements">Acknowledgements</h2>
-<p>bla bla</p>
+<p>I would like to acknowledge The Coding School and SYEP for the opportunity to learn about data science and collaborate with the Columbia University Data Science Institute; Ms.&nbsp;Sarah Parker as well as my TAs, Pavithra and Shruti, for teaching me R; and Professor Shaunette Ferguson for incredible guidance on this project and teaching me about the applications of data science in businesses.</p>
 </section>
 
 </main>

@@ -1,5 +1,5 @@
 ---
-title: "Economic Activity and Historical Risk Factors: Key Factors of Food Safety Oversight in Chicago"
+title: "Economic Activity and Historical Risk Factors: Key Influences of Food Safety Oversight in Chicago"
 author: "Michelle Jayaraj"
 format: html
 editor: visual
@@ -19,8 +19,7 @@ References: Smith, J. (2021). Economic Disparities and Public Health Outcomes. J
 
 **Figure 1: Geographic Distribution of Inspections in Chicago** This plot illustrates the geographic distribution of food safety inspections across Chicago, visualized using a density heatmap. The density of inspections is shown with colors ranging from yellow (low density) to blue (high density), indicating the number of inspections conducted in various regions, measured by longitude and latitude. The heatmap reveals that the highest concentration of inspections occurs at about 41.887, -87.625, as indicated by the blue and purple areas. This spatial analysis of Chicago provides a visual context in the variance of inspection counts over different Chicago regions.
 
-```{r}
-#|echo: false
+```{r, echo = F}
 # loading libraries and data
 library(ggplot2)
 library(caTools)
@@ -34,8 +33,7 @@ cfs_clean <- readRDS("/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/Michell
 merged_data_clean <- readRDS("/Users/michelle/Downloads/DSRP/DSRP-2024-Shaunette/MichelleProject/merged_data_clean.rds")
 ```
 
-```{r}
-#|echo: false
+```{r, echo = F, warning = F}
 ggplot(cfs_clean, aes(x = longitude, y = latitude)) +
   geom_bin2d(bins = 30, alpha = 0.8) +  
   scale_fill_gradient(low = "yellow", high = "blue") +
@@ -53,8 +51,7 @@ ggplot(cfs_clean, aes(x = longitude, y = latitude)) +
 
 **Figure 2a: Relationship Between Complaint and Inspection Count** This plot illustrates the relationship between the log-transformed counts of complaints and the log-transformed inspection counts. The blue points represent individual data points, while the red dashed line indicates the clear linear trend. There is a positive correlation of 0.498662 between these variables. This suggests that a establishments with higher complaint counts may tend to undergo more inspections.
 
-```{r}
-#|echo: false
+```{r, echo = F, message = F}
 ggplot(merged_data_clean, aes(x = log_complaint_count, y = log_inspection_count)) +
   geom_point(alpha = 0.6, size = 0.5, color = "blue") +  
   geom_smooth(method = "lm", se = FALSE, color = "red", linetype = "dashed") +  
@@ -75,8 +72,7 @@ ggplot(merged_data_clean, aes(x = log_complaint_count, y = log_inspection_count)
 
 **Figure 2b: Relationship Between Hardship Index and Inspection Counts** This plot illustrates the relationship between the log-transformed counts of Risk 1 results (high risk classification) and the log-transformed inspection counts. The blue points represent individual data points, while the red dashed line indicates the clear linear trend. There is a strong positive correlation of 0.8231694 between these variables. This suggests that establishments with higher Risk 1 counts tend to undergo more inspections.
 
-```{r}
-#|echo: false
+```{r, echo = F, message = F}
 ggplot(merged_data_clean, aes(x = log_risk_1_count, y = log_inspection_count)) +
   geom_point(alpha = 0.6, size = 1, color = "blue") +
   geom_smooth(method = "lm", se = FALSE, color = "red", linetype = "dashed") +
@@ -97,8 +93,7 @@ ggplot(merged_data_clean, aes(x = log_risk_1_count, y = log_inspection_count)) +
 
 **Figure 2c: Relationship Between Hardship Index and Inspection Counts** This plot shows the relationship between the log-transformed percentages of unemployment among individuals aged 16 and older and the log-transformed inspection counts. The blue points depict individual data points. With a weak negative correlation of -0.06222899, there is no clear linear trend, suggesting that other factors might play a more significant role in determining the frequency of inspections. Unemployment percentage alone does not provide a strong explanatory power for the variance in inspection counts.
 
-```{r}
-#|echo: false
+```{r, echo = F, message = F}
 ggplot(merged_data_clean, aes(x = log_percent_aged_16_unemployed, y = log_inspection_count)) +
   geom_point(alpha = 0.6, size = 1, color = "blue") +
   labs(title = "Relationship of Unemployment Rates & Inspection Counts",
@@ -118,8 +113,7 @@ ggplot(merged_data_clean, aes(x = log_percent_aged_16_unemployed, y = log_inspec
 
 **Figure 2d: Relationship Between Hardship Index and Inspection Counts** This plot depicts the relationship between the log-transformed hardship index and the log-transformed inspection counts. The blue points represent individual data points. Similar to the unemployment percentage, with a weak negative correlation of -0.08902566, there is no clear linear trend indicating that the hardship index may not provide strong explanatory power for the variance in inspection counts, either.
 
-```{r}
-#|echo: false
+```{r, echo = F, message = F}
 ggplot(merged_data_clean, aes(x = log_hardship_index, y = log_inspection_count)) +
   geom_point(alpha = 0.6, size = 1, color = "blue") +
   labs(title = "Relationship of Hardship Index and Inspection Counts",
@@ -139,9 +133,8 @@ ggplot(merged_data_clean, aes(x = log_hardship_index, y = log_inspection_count))
 
 **Figure 3a: Creating Linear Models** This analysis compared two linear regression models to predict log-transformed inspection counts using different sets of predictors. In Linear Model 1, which included log-transformed counts of Risk 1 violations and complaints, the mean squared error (MSE) was 0.0817, indicating a reasonably accurate prediction with 70.61% of the variance explained (R-squared = 0.7061). Model 2 expanded on Model 1 by adding log-transformed hardship index and unemployment percentage as additional predictors. Model 2 demonstrated a slightly improved performance with an MSE of 0.0816 and a higher R-squared of 0.7072, indicating that 70.72% of the variance in log inspection counts was explained.
 
-```{r}
-#| code-fold: true
-# Split the data
+```{r, echo = T}
+# Split the data into train and test data
 split <- sample.split(merged_data_clean$log_inspection_count, SplitRatio = 0.8)
 train_data <- subset(merged_data_clean, split == TRUE)
 test_data <- subset(merged_data_clean, split == FALSE)
@@ -152,10 +145,13 @@ lr_model <- lm(log_inspection_count ~ log_risk_1_count + log_complaint_count, da
 # Linear Model #2 - uses 4 predicting variables
 extended_model <- lm(log_inspection_count ~ log_hardship_index + log_percent_aged_16_unemployed + log_risk_1_count + log_complaint_count, data = train_data)
 
-# Predicting
+# Predicting with each model
 pred <- predict(lr_model, newdata = test_data)
 pred_2 <- predict(extended_model, newdata = test_data)
 
+```
+
+```{r, echo = F}
 # Linear Model 1
 cat("\nLinear Model 1:\n")
 cat("Mean Squared Error (MSE) = ", mean((test_data$log_inspection_count - pred)^2), "\n")
@@ -167,10 +163,11 @@ cat("Mean Squared Error (MSE) = ", mean((test_data$log_inspection_count - pred_2
 cat("R-squared = ", summary(extended_model)$r.squared, "\n")
 ```
 
-Figure 3b: Plotting Predicted Inspection Count vs Actual Inspection Count
+**Figure 3b: Plotting Predicted Inspection Count vs Actual Inspection Count** The scatter plot compares predicted vs. actual log inspection counts. Each blue point represents an observation, with the red dashed line indicating perfect prediction (where predicted equals actual). The spread of points around this line shows how closely the model's predictions match reality. While predictions are somewhat accurate, the scatter suggests variability, indicating areas where the model could be improved.
 
-```{r}
-plot_data_extended <- data.frame(log_inspection_count, pred_2)
+```{r, echo = F}
+plot_data_extended <- data.frame(log_inspection_count = test_data$log_inspection_count, pred_2)
+
 ggplot(plot_data_extended, aes(x = log_inspection_count, y = pred_2)) +
   geom_point(alpha = 0.25, color = "blue", size = 0.75) +
    geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") +
@@ -184,18 +181,18 @@ ggplot(plot_data_extended, aes(x = log_inspection_count, y = pred_2)) +
     plot.title = element_text(size = 16, hjust = 0.5),
     axis.title.x = element_text(size = 14),
     axis.title.y = element_text(size = 14)
-  ) +
-  coord_cartesian(xlim = c(0, 16))
+  ) 
 
 ```
 
 **Figure 3c: Comparing Linear Models** The ANOVA test between the two models yielded a significant result (P-value = 0.000409 \< α = 0.05), suggesting that the additional predictors of log of percent of unemployment and log of hardship index in Model 2 significantly improved the model fit compared to Model 1.
 
 ```{r}
-#| code-fold: true
 anova_result <- anova(lr_model, extended_model)
-cat("\nANOVA Test Results:\n")
-cat("P-value: ", anova_result$`Pr(>F)`, "\n")
+```
+
+```{r, echo = F}
+cat("\nANOVA Test Results: P-value of ", anova_result$`Pr(>F)`)
 ```
 
 ## Discussion
@@ -204,8 +201,8 @@ The analysis of these linear regression models provides valuable insights into t
 
 ## Code and Data Availability
 
-The data supporting the findings of this study is available at \_\_\_ and \_\_. Codes developed in this study can be accessed at \_\_\_\_
+The data supporting the findings of this study is available at <https://data.cityofchicago.org/Health-Human-Services/Food-Inspections/4ijn-s7e5/about_data> and <https://data.cityofchicago.org/Health-Human-Services/Unemployment/ymyn-s5a8>. Codes developed in this study can be accessed at <https://github.com/the-codingschool/DSRP-2024-Shaunette>.
 
 ## Acknowledgements
 
-I would like to acknowledge The Coding School for the opportunity to learn about data science and collaborate with the Columbia University Data Science Institute; Sarah Parker for teaching me R; and Professor Shaunette Ferguson for incredible guidance on this project and teaching me about the applications of data science in businesses.
+I would like to acknowledge The Coding School and SYEP for the opportunity to learn about data science and collaborate with the Columbia University Data Science Institute; Ms. Sarah Parker as well as my TAs, Pavithra and Shruti, for teaching me R; and Professor Shaunette Ferguson for incredible guidance on this project and teaching me about the applications of data science in businesses.
